@@ -25,6 +25,18 @@ const App = () => {
       ctx.font = '12px sans-serif';
       ctx.fillText(point.tag, point.x - 4, point.y - 6);
     });
+
+    const clickedPoints = pointArray.filter((point) => point.isClicked);
+    if (clickedPoints.length === 2) {
+      const startPoint = clickedPoints[0];
+      const endPoint = clickedPoints[1];
+
+      ctx.beginPath();
+      ctx.moveTo(startPoint.x, startPoint.y);
+      ctx.lineTo(endPoint.x, endPoint.y);
+      ctx.strokeStyle = 'red';
+      ctx.stroke();
+    }
   }, [pointArray]);
 
   const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
