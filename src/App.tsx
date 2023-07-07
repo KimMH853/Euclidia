@@ -31,9 +31,10 @@ const App = () => {
       const startPoint = clickedPoints[0];
       const endPoint = clickedPoints[1];
 
+      const radius = Math.sqrt((endPoint.x - startPoint.x) ** 2 + (endPoint.y - startPoint.y) ** 2);
+
       ctx.beginPath();
-      ctx.moveTo(startPoint.x, startPoint.y);
-      ctx.lineTo(endPoint.x, endPoint.y);
+      ctx.arc(startPoint.x, startPoint.y, radius, 0, 2 * Math.PI);
       ctx.strokeStyle = 'red';
       ctx.stroke();
     }
