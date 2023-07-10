@@ -2,10 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [pointArray, setPointArray] = useState<{ tag: string; x: number; y: number; isClicked: boolean }[]>([
-    { tag: 'A', x: 100, y: 200, isClicked: false },
-    { tag: 'B', x: 300, y: 200, isClicked: false },
+  const [pointArray, setPointArray] = useState<{ tag: string; x: number; y: number; color: string }[]>([
+    { tag: 'A', x: 100, y: 200, color: 'black' },
+    { tag: 'B', x: 300, y: 200, color: 'black' },
   ]);
+  const [clickedPoints, setClickedPoints] = useState<{ x: number; y: number }[]>([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -19,14 +20,13 @@ const App = () => {
     pointArray.forEach((point) => {
       ctx.beginPath();
       ctx.arc(point.x, point.y, 2, 0, 2 * Math.PI);
-      ctx.fillStyle = point.isClicked ? 'blue' : 'black';
+      ctx.fillStyle = point.color;
       ctx.fill();
 
       ctx.font = '12px sans-serif';
       ctx.fillText(point.tag, point.x - 4, point.y - 6);
     });
 
-    const clickedPoints = pointArray.filter((point) => point.isClicked);
     if (clickedPoints.length === 2) {
       const startPoint = clickedPoints[0];
       const endPoint = clickedPoints[1];
@@ -35,10 +35,10 @@ const App = () => {
 
       ctx.beginPath();
       ctx.arc(startPoint.x, startPoint.y, radius, 0, 2 * Math.PI);
-      ctx.strokeStyle = 'red';
+      ctx.strokeStyle = 'black';
       ctx.stroke();
     }
-  }, [pointArray]);
+  }, [pointArray, clickedPoints]);
 
   const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -48,16 +48,20 @@ const App = () => {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    const updatedPoints = pointArray.map((point) => {
+    const clickedPointIndex = pointArray.findIndex((point) => {
       const distance = Math.sqrt((point.x - x) ** 2 + (point.y - y) ** 2);
-      const isClicked = distance <= 10;
-      return {
-        ...point,
-        isClicked: point.isClicked || isClicked,
-      };
+      return distance <= 10;
     });
 
-    setPointArray(updatedPoints);
+    if (clickedPointIndex !== -1) {
+      const clickedPoint = pointArray[clickedPointIndex];
+      setClickedPoints((prevClickedPoints) => [...prevClickedPoints, { x: clickedPoint.x, y: clickedPoint.y }]);
+      setPointArray((prevPointArray) => {
+        const updatedPointArray = [...prevPointArray];
+        updatedPointArray[clickedPointIndex].color = 'blue';
+        return updatedPointArray;
+      });
+    }
   };
 
   return (
