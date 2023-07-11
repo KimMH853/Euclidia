@@ -7,6 +7,7 @@ const App = () => {
     { tag: 'B', x: 300, y: 200, color: 'black' },
   ]);
   const [clickedPoints, setClickedPoints] = useState<{ x: number; y: number }[]>([]);
+  const [line, setLine] = useState<{ startX: number; startY: number; endX: number; endY: number } | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -27,6 +28,14 @@ const App = () => {
       ctx.fillText(point.tag, point.x - 4, point.y - 6);
     });
 
+    if (line) {
+      ctx.beginPath();
+      ctx.moveTo(line.startX, line.startY);
+      ctx.lineTo(line.endX, line.endY);
+      ctx.strokeStyle = 'black';
+      ctx.stroke();
+    }
+
     if (clickedPoints.length === 2) {
       const startPoint = clickedPoints[0];
       const endPoint = clickedPoints[1];
@@ -38,7 +47,7 @@ const App = () => {
       ctx.strokeStyle = 'black';
       ctx.stroke();
     }
-  }, [pointArray, clickedPoints]);
+  }, [pointArray, line, clickedPoints]);
 
   const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -61,6 +70,12 @@ const App = () => {
         updatedPointArray[clickedPointIndex].color = 'blue';
         return updatedPointArray;
       });
+
+      if (clickedPoints.length === 1) {
+        const startPoint = clickedPoints[0];
+        const endPoint = { x: clickedPoint.x, y: clickedPoint.y };
+        setLine({ startX: startPoint.x, startY: startPoint.y, endX: endPoint.x, endY: endPoint.y });
+      }
     }
   };
 
