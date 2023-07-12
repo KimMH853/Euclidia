@@ -1,13 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react';
+import pointToLineDistance from './util/pointToLineDistance';
+
+type Shape = {
+    type: string,
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number,
+    selected: boolean,
+  };
+  
+
 
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [pointArray, setPointArray] = useState<{ tag: string; x: number; y: number; color: string }[]>([
-    { tag: 'A', x: 100, y: 200, color: 'black' },
-    { tag: 'B', x: 300, y: 200, color: 'black' },
-  ]);
+  const [shapes, setShapes] = useState<Shape[]>([]);
+  const [shapeChoices, setShapeChoices] = useState<Shape[]>([]);
   const [clickedPoints, setClickedPoints] = useState<{ x: number; y: number }[]>([]);
-  const [line, setLine] = useState<{ startX: number; startY: number; endX: number; endY: number } | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -17,80 +26,130 @@ const App = () => {
     if (!ctx) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    pointArray.forEach((point) => {
-      ctx.beginPath();
-      ctx.arc(point.x, point.y, 2, 0, 2 * Math.PI);
-      ctx.fillStyle = point.color;
-      ctx.fill();
-
-      ctx.font = '12px sans-serif';
-      ctx.fillText(point.tag, point.x - 4, point.y - 6);
+    shapes.forEach((shape) => {
+      if (shape.type === 'line') {
+        ctx.beginPath();
+        ctx.moveTo(shape.startX, shape.startY);
+        ctx.lineTo(shape.endX, shape.endY);
+        ctx.strokeStyle = shape.selected ? 'red' : 'black';
+        ctx.stroke();
+      } else if (shape.type === 'circle') {
+        const radius = Math.sqrt((shape.endX - shape.startX) ** 2 + (shape.endY - shape.startY) ** 2);
+        ctx.beginPath();
+        ctx.arc(shape.startX, shape.startY, radius, 0, 2 * Math.PI);
+        ctx.strokeStyle = shape.selected ? 'blue' : 'black';
+        ctx.stroke();
+      }
     });
 
-    if (line) {
-      ctx.beginPath();
-      ctx.moveTo(line.startX, line.startY);
-      ctx.lineTo(line.endX, line.endY);
-      ctx.strokeStyle = 'black';
-      ctx.stroke();
-    }
+    shapeChoices.forEach((shape) => {
+      if (shape.type === 'line') {
+        ctx.beginPath();
+        ctx.moveTo(shape.startX, shape.startY);
+        ctx.lineTo(shape.endX, shape.endY);
+        ctx.strokeStyle = shape.selected ? 'red' : 'black';
+        ctx.stroke();
+      } else if (shape.type === 'circle') {
+        const radius = Math.sqrt((shape.endX - shape.startX) ** 2 + (shape.endY - shape.startY) ** 2);
+        ctx.beginPath();
+        ctx.arc(shape.startX, shape.startY, radius, 0, 2 * Math.PI);
+        ctx.strokeStyle = shape.selected ? 'blue' : 'black';
+        ctx.stroke();
+      }
+    });
 
     if (clickedPoints.length === 2) {
       const startPoint = clickedPoints[0];
       const endPoint = clickedPoints[1];
 
-      const radius = Math.sqrt((endPoint.x - startPoint.x) ** 2 + (endPoint.y - startPoint.y) ** 2);
 
-      ctx.beginPath();
-      ctx.arc(startPoint.x, startPoint.y, radius, 0, 2 * Math.PI);
-      ctx.strokeStyle = 'black';
-      ctx.stroke();
+      const newLine: Shape = {
+        type: 'line',
+        startX: startPoint.x,
+        startY: startPoint.y,
+        endX: endPoint.x,
+        endY: endPoint.y,
+        selected: false,
+      };
+
+      const newCircle: Shape = {
+        type: 'circle',
+        startX: startPoint.x,
+        startY: startPoint.y,
+        endX: endPoint.x,
+        endY: endPoint.y,
+        selected: false,
+      };
+
+      setShapeChoices((prevShapes) => [...prevShapes, newLine, newCircle]);
+      setClickedPoints([]);
     }
-  }, [pointArray, line, clickedPoints]);
+  }, [shapes, shapeChoices, clickedPoints]);
 
   const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    if(shapeChoices.length === 2) return;
 
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    const clickedPointIndex = pointArray.findIndex((point) => {
-      const distance = Math.sqrt((point.x - x) ** 2 + (point.y - y) ** 2);
-      return distance <= 10;
-    });
+    setClickedPoints((prevClickedPoints) => [...prevClickedPoints, { x, y }]);
+  };
 
-    if (clickedPointIndex !== -1) {
-      const clickedPoint = pointArray[clickedPointIndex];
-      setClickedPoints((prevClickedPoints) => [...prevClickedPoints, { x: clickedPoint.x, y: clickedPoint.y }]);
-      setPointArray((prevPointArray) => {
-        const updatedPointArray = [...prevPointArray];
-        updatedPointArray[clickedPointIndex].color = 'blue';
-        return updatedPointArray;
-      });
+  const isWithinLine = (x: number, y: number, line: Shape): boolean => {
+    const distance = pointToLineDistance(x, y, line.startX, line.startY, line.endX, line.endY);
+    const pointArea = Math.sqrt((line.endX - x) ** 2 + (line.endY - y) ** 2);
+    return distance <= 10 && pointArea > 20;
+    };
 
-      if (clickedPoints.length === 1) {
-        const startPoint = clickedPoints[0];
-        const endPoint = { x: clickedPoint.x, y: clickedPoint.y };
-        setLine({ startX: startPoint.x, startY: startPoint.y, endX: endPoint.x, endY: endPoint.y });
-      }
+  const isWithinCircle = (x: number, y: number, circle: Shape): boolean => {
+    const radius = Math.sqrt((circle.startX - circle.endX) ** 2 + (circle.startY - circle.endY) ** 2);
+    const distance = Math.sqrt((x - circle.startX) ** 2 + (y - circle.startY) ** 2);
+    const pointArea = Math.sqrt((circle.endX - x) ** 2 + (circle.endY - y) ** 2);
+    return distance < radius + 10 && distance > radius - 10 && pointArea > 20;
+  };
+  
+  const handleShapeClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    if (shapeChoices.length !== 2) return;
+  
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+  
+    if (shapeChoices[0].type === 'line' && isWithinLine(x, y, shapeChoices[0])) {
+      // 좌표가 직선에서 10 이내인 경우
+      console.log('Clicked within line');
+      setShapes((prevShapes)=>[...prevShapes, shapeChoices[0]])
+      setShapeChoices([]);
     }
+    
+    if (shapeChoices[1].type === 'circle' && isWithinCircle(x, y, shapeChoices[1])) {
+      // 좌표가 원에서 10 이내인 경우
+      console.log('Clicked within circle');
+      setShapes((prevShapes)=>[...prevShapes, shapeChoices[1]])
+      setShapeChoices([]);
+    }
+  };
+  const handleCombinedClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    handleCanvasClick(event);
+    handleShapeClick(event);
   };
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
-      <div className="mb-4">
-        1. On a given finite right line (AB) to construct an equilateral triangle.
-      </div>
+      <div className="mb-4">Draw a line or a circle by clicking two points</div>
       <canvas
         ref={canvasRef}
         width={400}
         height={400}
         className="border border-black"
-        onClick={handleCanvasClick}
+        onClick={handleCombinedClick}
       />
+      
     </div>
   );
 };
