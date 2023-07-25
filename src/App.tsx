@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import newPoint from "./util/newPoint";
 
 type Shape = {
   type: string;
@@ -59,10 +60,9 @@ const App = () => {
         ctx.stroke();
       }
     });
-    
-  }, [pointArray, shapes, ]);
+  }, [pointArray, shapes]);
 
-  useEffect(()=>{
+  useEffect(() => {
     if (clickedPoints.length === 2) {
       const [startPoint, endPoint] = clickedPoints;
 
@@ -79,7 +79,7 @@ const App = () => {
       setClickedPoints([]);
       setShapeType("");
     }
-  },[clickedPoints, shapeType])
+  }, [clickedPoints, shapeType]);
 
   const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -92,12 +92,14 @@ const App = () => {
     const updatedPoints = pointArray.map((point) => {
       const distance = Math.sqrt((point.x - x) ** 2 + (point.y - y) ** 2);
       const isClicked = distance <= 10;
+
       if (isClicked) {
         setClickedPoints((prevClicked) => [
           ...prevClicked,
           { x: point.x, y: point.y },
         ]);
       }
+
       return {
         ...point,
         isClicked: point.isClicked || isClicked,
@@ -111,13 +113,17 @@ const App = () => {
     setShapeType(event.currentTarget.name);
   };
 
+
   return (
     <div className="flex flex-col items-center justify-center h-screen">
+
       <div className="mb-4">
         1. On a given finite right line (AB) to construct an equilateral
         triangle.
       </div>
+
       <div className="m-2">
+
         <button
           className="mr-2 px-4 py-2 bg-blue-500 text-white rounded cursor-pointer"
           name="line"
@@ -125,6 +131,7 @@ const App = () => {
         >
           직선
         </button>
+
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded cursor-pointer"
           name="circle"
@@ -132,7 +139,9 @@ const App = () => {
         >
           원
         </button>
+        
       </div>
+
       <canvas
         ref={canvasRef}
         width={400}
@@ -140,10 +149,14 @@ const App = () => {
         className="border border-black"
         onClick={handleCanvasClick}
       />
+
       <div>
-        <div> {JSON.stringify(clickedPoints)}</div>
-        <div> {JSON.stringify(shapes)}</div>
+        <div> pointArray {JSON.stringify(pointArray)}</div>
+        <div> clickedPoints {JSON.stringify(clickedPoints)}</div>
+        <div> shapes {JSON.stringify(shapes)}</div>
+        <div> {JSON.stringify(newPoint)} </div>
       </div>
+      
     </div>
   );
 };
