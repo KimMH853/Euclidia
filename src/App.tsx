@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import newPoint from "./util/newPoint";
+import distanceBetweenPoints from "./util/distanceBetweenPoints";
 
 type Shape = {
   type: string;
@@ -12,7 +13,7 @@ type Shape = {
 
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [pointArray, setPointArray] = useState<
+  const [points, setPoints] = useState<
     { tag: string; x: number; y: number; isClicked: boolean }[]
   >([
     { tag: "A", x: 100, y: 200, isClicked: false },
@@ -23,6 +24,8 @@ const App = () => {
     { x: number; y: number }[]
   >([]);
   const [shapeType, setShapeType] = useState("");
+  const [prevShapesLength, setPrevShapesLength] = useState(shapes.length);
+
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -33,7 +36,7 @@ const App = () => {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    pointArray.forEach((point) => {
+    points.forEach((point) => {
       ctx.beginPath();
       ctx.arc(point.x, point.y, 2, 0, 2 * Math.PI);
       ctx.fillStyle = point.isClicked ? "blue" : "black";
@@ -60,7 +63,7 @@ const App = () => {
         ctx.stroke();
       }
     });
-  }, [pointArray, shapes]);
+  }, [points, shapes]);
 
   useEffect(() => {
     if (clickedPoints.length === 2) {
@@ -78,8 +81,46 @@ const App = () => {
       setShapes((prevShapes) => [...prevShapes, newShape]);
       setClickedPoints([]);
       setShapeType("");
+      points.forEach((point) => {
+        point.isClicked = false;
+      });
     }
-  }, [clickedPoints, shapeType]);
+  }, [clickedPoints, shapeType, points]);
+
+  //새로운 point 추가
+  useEffect(() => {
+    const circleShapes = shapes.filter((shape) => shape.type === "circle");
+  
+    if (circleShapes.length >= 2 && shapes.length > prevShapesLength) {
+      const {
+        startX: lastStartX,
+        startY: lastStartY,
+        endX: lastEndX,
+        endY: lastEndY,
+      } = circleShapes[circleShapes.length - 1];
+  
+      const lastR1 = distanceBetweenPoints(lastStartX, lastStartY, lastEndX, lastEndY);
+      let results: { x: number; y: number; }[] = [];
+  
+      results = circleShapes.slice(0, circleShapes.length - 1).flatMap(({ startX, startY, endX, endY }) => {
+        const r2 = distanceBetweenPoints(startX, startY, endX, endY);
+        return newPoint(lastStartX, lastStartY, lastR1, startX, startY, r2);
+      });
+  
+      const newPoints = results.filter(({ x, y }) => !points.some(point => point.x === x && point.y === y));
+  
+      setPoints((prevPoints) => [
+        ...prevPoints,
+        ...newPoints.map((point, index) => ({
+          tag: String.fromCharCode(prevPoints.length + index + 65),
+          ...point,
+          isClicked: false,
+        })),
+      ]);
+  
+      setPrevShapesLength(shapes.length);
+    }
+  }, [shapes, points]);
 
   const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -89,7 +130,7 @@ const App = () => {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    const updatedPoints = pointArray.map((point) => {
+    const updatedPoints = points.map((point) => {
       const distance = Math.sqrt((point.x - x) ** 2 + (point.y - y) ** 2);
       const isClicked = distance <= 10;
 
@@ -106,24 +147,21 @@ const App = () => {
       };
     });
 
-    setPointArray(updatedPoints);
+    setPoints(updatedPoints);
   };
 
   const handleTypeClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setShapeType(event.currentTarget.name);
   };
 
-
   return (
     <div className="flex flex-col items-center justify-center h-screen">
-
       <div className="mb-4">
         1. On a given finite right line (AB) to construct an equilateral
         triangle.
       </div>
 
       <div className="m-2">
-
         <button
           className="mr-2 px-4 py-2 bg-blue-500 text-white rounded cursor-pointer"
           name="line"
@@ -139,7 +177,6 @@ const App = () => {
         >
           원
         </button>
-        
       </div>
 
       <canvas
@@ -151,12 +188,10 @@ const App = () => {
       />
 
       <div>
-        <div> pointArray {JSON.stringify(pointArray)}</div>
+        <div> points {JSON.stringify(points)}</div>
         <div> clickedPoints {JSON.stringify(clickedPoints)}</div>
         <div> shapes {JSON.stringify(shapes)}</div>
-        <div> {JSON.stringify(newPoint)} </div>
       </div>
-      
     </div>
   );
 };
