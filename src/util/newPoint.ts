@@ -1,7 +1,6 @@
 import nerdamer from "nerdamer/all.js";
 
 const newPoint = (x1: number, y1: number, r1: number,  x2: number, y2: number, r2: number): { x: number; y: number; }[] =>{
-  console.log(x1, y1, r1, x2, y2, r2);
 
   if(y1 === y2) {
     

@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import newPoint from "./util/newPoint";
 import distanceBetweenPoints from "./util/distanceBetweenPoints";
+import equilateralTriangle from "./checkAnswer/equilateralTriangle";
+import makeComparableValue from "./util/makeComparableValue";
 
 type Shape = {
   type: string;
@@ -16,17 +18,21 @@ const App = () => {
   const [points, setPoints] = useState<
     { tag: string; x: number; y: number; isClicked: boolean }[]
   >([
-    { tag: "A", x: 100, y: 200, isClicked: false },
-    { tag: "B", x: 300, y: 200, isClicked: false },
+    { tag: "A", x: 150, y: 200, isClicked: false },
+    { tag: "B", x: 250, y: 200, isClicked: false },
   ]);
   const [shapes, setShapes] = useState<Shape[]>([]);
   const [clickedPoints, setClickedPoints] = useState<
     { x: number; y: number }[]
   >([]);
   const [shapeType, setShapeType] = useState("");
-  const [prevShapesLength, setPrevShapesLength] = useState(shapes.length);
+  const [isLineSelected, setIsLineSelected] = useState<boolean>(false);
+  const [isCircleSelected, setIsCircleSelected] = useState<boolean>(false);
+  const [prevCircleShapesCount, setPrevCircleShapesCount] = useState(1);
+  const [isAnswer, setIsAnswer] = useState(false);
+  const [isAnswerClicked, setIsAnswerClicked] = useState(false);
 
-
+  //점과 도형 그리기
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -65,8 +71,9 @@ const App = () => {
     });
   }, [points, shapes]);
 
+  //shapes 배열 추가
   useEffect(() => {
-    if (clickedPoints.length === 2) {
+    if (clickedPoints.length === 2 && shapeType !== "" && !isAnswerClicked) {
       const [startPoint, endPoint] = clickedPoints;
 
       const newShape: Shape = {
@@ -80,35 +87,53 @@ const App = () => {
 
       setShapes((prevShapes) => [...prevShapes, newShape]);
       setClickedPoints([]);
-      setShapeType("");
       points.forEach((point) => {
         point.isClicked = false;
       });
     }
-  }, [clickedPoints, shapeType, points]);
+  }, [clickedPoints, shapeType, points, isAnswerClicked]);
 
   //새로운 point 추가
   useEffect(() => {
     const circleShapes = shapes.filter((shape) => shape.type === "circle");
-  
-    if (circleShapes.length >= 2 && shapes.length > prevShapesLength) {
+
+    if (circleShapes.length > prevCircleShapesCount) {
       const {
         startX: lastStartX,
         startY: lastStartY,
         endX: lastEndX,
         endY: lastEndY,
       } = circleShapes[circleShapes.length - 1];
-  
-      const lastR1 = distanceBetweenPoints(lastStartX, lastStartY, lastEndX, lastEndY);
-      let results: { x: number; y: number; }[] = [];
-  
-      results = circleShapes.slice(0, circleShapes.length - 1).flatMap(({ startX, startY, endX, endY }) => {
-        const r2 = distanceBetweenPoints(startX, startY, endX, endY);
-        return newPoint(lastStartX, lastStartY, lastR1, startX, startY, r2);
-      });
-  
-      const newPoints = results.filter(({ x, y }) => !points.some(point => point.x === x && point.y === y));
-  
+
+      const lastR1 = distanceBetweenPoints(
+        lastStartX,
+        lastStartY,
+        lastEndX,
+        lastEndY
+      );
+
+      let results: { x: number; y: number }[] = [];
+      results = circleShapes
+        .slice(0, circleShapes.length - 1)
+        .flatMap(({ startX, startY, endX, endY }) => {
+          const r2 = distanceBetweenPoints(startX, startY, endX, endY);
+          console.log(startX);
+          return newPoint(lastStartX, lastStartY, lastR1, startX, startY, r2);
+        });
+
+      const newPoints = results.filter(
+        ({ x, y }) =>
+          !points.some(() => {
+            const comparableX = makeComparableValue(x);
+            const comparableY = makeComparableValue(y);
+            return points.some(
+              (point) =>
+                makeComparableValue(point.x) === comparableX &&
+                makeComparableValue(point.y) === comparableY
+            );
+          })
+      );
+
       setPoints((prevPoints) => [
         ...prevPoints,
         ...newPoints.map((point, index) => ({
@@ -117,53 +142,90 @@ const App = () => {
           isClicked: false,
         })),
       ]);
-  
-      setPrevShapesLength(shapes.length);
-    }
-  }, [shapes, points]);
 
-  const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+      setPrevCircleShapesCount(circleShapes.length);
+    }
+  }, [shapes, points, prevCircleShapesCount]);
+
+  const handlePointClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
+  
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-
+  
     const updatedPoints = points.map((point) => {
       const distance = Math.sqrt((point.x - x) ** 2 + (point.y - y) ** 2);
       const isClicked = distance <= 10;
 
+      //clickedPoints 관리
       if (isClicked) {
-        setClickedPoints((prevClicked) => [
-          ...prevClicked,
-          { x: point.x, y: point.y },
-        ]);
+        const duplicationPoints = clickedPoints.filter(
+          (clickedPoint) =>
+            clickedPoint.x === point.x && clickedPoint.y === point.y
+        );
+  
+        if (duplicationPoints.length === 0) {
+          setClickedPoints((prevClicked) => [
+            ...prevClicked,
+            { x: point.x, y: point.y },
+          ]);
+        } else {
+          setClickedPoints((prevClicked) =>
+            prevClicked.filter(
+              (clickedPoint) =>
+                clickedPoint.x !== point.x || clickedPoint.y !== point.y
+            )
+          );
+        }
       }
-
+  
       return {
         ...point,
-        isClicked: point.isClicked || isClicked,
+        isClicked: isClicked ? !point.isClicked : point.isClicked,
       };
     });
-
+  
     setPoints(updatedPoints);
   };
 
   const handleTypeClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setShapeType(event.currentTarget.name);
+    const selectedType = event.currentTarget.name;
+
+    if (shapeType === selectedType) {
+      setShapeType("");
+      setIsLineSelected(false);
+      setIsCircleSelected(false);
+    } else {
+      setShapeType(selectedType);
+      setIsLineSelected(selectedType === "line");
+      setIsCircleSelected(selectedType === "circle");
+    }
+  };
+
+  const handleAnswerButtonClick = () => {
+    if (isAnswerClicked && clickedPoints.length === 3) {
+      setIsAnswer(equilateralTriangle(clickedPoints));
+      setClickedPoints([]);
+    }
+
+    setIsAnswerClicked((prev) => !prev);
   };
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <div className="mb-4">
-        1. On a given finite right line (AB) to construct an equilateral
-        triangle.
+        On a given finite right line (AB) to construct an equilateral triangle.
       </div>
 
       <div className="m-2">
         <button
-          className="mr-2 px-4 py-2 bg-blue-500 text-white rounded cursor-pointer"
+          className={`mr-2 px-4 py-2 ${
+            isLineSelected
+              ? "bg-blue-500 text-white"
+              : "bg-white text-blue-500 border-blue-500 border"
+          } rounded cursor-pointer`}
           name="line"
           onClick={handleTypeClick}
         >
@@ -171,7 +233,11 @@ const App = () => {
         </button>
 
         <button
-          className="px-4 py-2 bg-blue-500 text-white rounded cursor-pointer"
+          className={`px-4 py-2 ${
+            isCircleSelected
+              ? "bg-blue-500 text-white"
+              : "bg-white text-blue-500 border-blue-500 border"
+          } rounded cursor-pointer`}
           name="circle"
           onClick={handleTypeClick}
         >
@@ -184,13 +250,23 @@ const App = () => {
         width={400}
         height={400}
         className="border border-black"
-        onClick={handleCanvasClick}
+        onClick={handlePointClick}
       />
 
       <div>
+        <button
+          className="px-4 py-2 bg-blue-500 text-white rounded cursor-pointer"
+          name="circle"
+          onClick={handleAnswerButtonClick}
+        >
+          {isAnswerClicked ? "확인" : "정답"}
+        </button>
+        {isAnswerClicked && <div>삼각형의 꼭지점을 클릭하세요</div>}
+        {isAnswer && <div>정답입니다</div>}
         <div> points {JSON.stringify(points)}</div>
         <div> clickedPoints {JSON.stringify(clickedPoints)}</div>
         <div> shapes {JSON.stringify(shapes)}</div>
+        <div> shapeType {JSON.stringify(shapeType)}</div>
       </div>
     </div>
   );
