@@ -1,6 +1,6 @@
 import nerdamer from "nerdamer/all.js";
 
-const newPoint = (x1: number, y1: number, r1: number,  x2: number, y2: number, r2: number): { x: number; y: number; }[] =>{
+const getNewCoordinates = (x1: number, y1: number, r1: number,  x2: number, y2: number, r2: number): { x: number; y: number; }[] =>{
 
   if(y1 === y2) {
     
@@ -56,4 +56,4 @@ const newPoint = (x1: number, y1: number, r1: number,  x2: number, y2: number, r
   }
 }
 
-export default newPoint;
+export default getNewCoordinates;
