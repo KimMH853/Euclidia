@@ -1,6 +1,7 @@
 const makeComparableValue = (number: number) => {
+  if(!number) return;
   number = parseFloat(number.toFixed(11));
-  number = Math.floor(number * 1000000000) / 1000000000;
+  number = Math.floor(number * 10000) / 10000;
 
   return number;
 };
