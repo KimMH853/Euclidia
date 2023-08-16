@@ -400,6 +400,39 @@ const App = () => {
     setProblemIndex((prev) => prev+1)
   }
 
+  const handleCanvasWheel = (event: React.WheelEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    const scaleFactor = event.deltaY > 0 ? 1.1 : 0.9; // 확대 또는 축소 비율
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 확대 또는 축소된 좌표 및 도형 그리기
+    coordinates.forEach((coordinate) => {
+      coordinate.x = (coordinate.x - x) * scaleFactor + x;
+      coordinate.y = (coordinate.y - y) * scaleFactor + y;
+    });
+
+    shapes.forEach((shape) => {
+      shape.startX = (shape.startX - x) * scaleFactor + x;
+      shape.startY = (shape.startY - y) * scaleFactor + y;
+      shape.endX = (shape.endX - x) * scaleFactor + x;
+      shape.endY = (shape.endY - y) * scaleFactor + y;
+    });
+
+    drawCoordinate(ctx);
+    drawShape(ctx);
+  };
+
+
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
@@ -450,6 +483,7 @@ const App = () => {
         height={400}
         className="border border-black"
         onClick={handleCanvasClick}
+        onWheel={handleCanvasWheel}
       />
 
       <div className="m-2">
@@ -469,7 +503,7 @@ const App = () => {
         </button>
         
         {isWrongAnswer && <div>정삼각형이 없어요</div>}
-        <div> shapes {JSON.stringify(shapes)}</div>
+        {/* <div> shapes {JSON.stringify(shapes)}</div> */}
       </div>
     </div>
   );
