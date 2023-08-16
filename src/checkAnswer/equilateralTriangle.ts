@@ -44,14 +44,14 @@ console.log("targetLine")
 console.log(targetLine)
   const otherCoord1 = {
     x: targetLine.startX + (targetLine.endX - targetLine.startX) / 2,
-    y: targetLine.startY + (lineLengths[0] * Math.sqrt(3)) / 2,
+    y: targetLine.startY - (lineLengths[0] * Math.sqrt(3)) / 2,
   };
   console.log("otherCoord1")
   console.log(otherCoord1)
 
   const otherCoord2 = {
     x: targetLine.startX + (targetLine.endX - targetLine.startX) / 2,
-    y: targetLine.startY - (lineLengths[0] * Math.sqrt(3)) / 2,
+    y: targetLine.startY + (lineLengths[0] * Math.sqrt(3)) / 2,
   };
   console.log("otherCoord2")
   console.log(otherCoord2)
@@ -60,20 +60,20 @@ console.log(targetLine)
     (line) =>
       (targetLine.startX === line.startX &&
         targetLine.startY === line.startY &&
-        otherCoord1.x === line.endX &&
-        otherCoord1.y === line.endY) ||
+        makeComparableValue(otherCoord1.x) === makeComparableValue(line.endX) &&
+        makeComparableValue(otherCoord1.y) === makeComparableValue(line.endY)) ||
       (targetLine.startX === line.endX &&
         targetLine.startY === line.endY &&
-        otherCoord1.x === line.startX &&
-        otherCoord1.y === line.startY) ||
+        makeComparableValue(otherCoord1.x) === makeComparableValue(line.startX) &&
+        makeComparableValue(otherCoord1.y) === makeComparableValue(line.startY)) ||
       (targetLine.endX === line.startX &&
         targetLine.endY === line.startY &&
-        otherCoord1.x === line.endX &&
-        otherCoord1.y === line.endY) ||
+        makeComparableValue(otherCoord1.x) === makeComparableValue(line.endX) &&
+        makeComparableValue(otherCoord1.y) === makeComparableValue(line.endY)) ||
       (targetLine.endX === line.endX &&
         targetLine.endY === line.endY &&
-        otherCoord1.x === line.startX &&
-        otherCoord1.y === line.startY)
+        makeComparableValue(otherCoord1.x) === makeComparableValue(line.startX) &&
+        makeComparableValue(otherCoord1.y) === makeComparableValue(line.startY))
   );
   console.log("triangleOtherCoord1")
   console.log(triangleOtherCoord1)
@@ -81,20 +81,20 @@ console.log(targetLine)
     (line) =>
       (targetLine.startX === line.startX &&
         targetLine.startY === line.startY &&
-        otherCoord2.x === line.endX &&
-        otherCoord2.y === line.endY) ||
+        makeComparableValue(otherCoord2.x) === makeComparableValue(line.endX) &&
+        makeComparableValue(otherCoord2.y) === makeComparableValue(line.endY)) ||
       (targetLine.startX === line.endX &&
         targetLine.startY === line.endY &&
-        otherCoord2.x === line.startX &&
-        otherCoord2.y === line.startY) ||
+        makeComparableValue(otherCoord2.x) === makeComparableValue(line.startX) &&
+        makeComparableValue(otherCoord2.y) === makeComparableValue(line.startY)) ||
       (targetLine.endX === line.startX &&
         targetLine.endY === line.startY &&
-        otherCoord2.x === line.endX &&
-        otherCoord2.y === line.endY) ||
+        makeComparableValue(otherCoord2.x) === makeComparableValue(line.endX) &&
+        makeComparableValue(otherCoord2.y) === makeComparableValue(line.endY)) ||
       (targetLine.endX === line.endX &&
         targetLine.endY === line.endY &&
-        otherCoord2.x === line.startX &&
-        otherCoord2.y === line.startY)
+        makeComparableValue(otherCoord2.x) === makeComparableValue(line.startX) &&
+        makeComparableValue(otherCoord2.y) === makeComparableValue(line.startY))
   );
 console.log("triangleOtherCoord2")
 console.log(triangleOtherCoord2)
