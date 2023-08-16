@@ -34,6 +34,9 @@ const App = () => {
   const [isWrongAnswer, setIsWrongAnswer] = useState(false);
 
   const [problemIndex, setProblemIndex] = useState(0);
+
+  
+  const lastMousePosition = useRef<{ x: number; y: number } | null>(null); // 마우스의 마지막 위치
   
 
   //점과 도형 그리기
@@ -432,6 +435,49 @@ const App = () => {
     drawShape(ctx);
   };
 
+  const handleCanvasDragStart = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    lastMousePosition.current = { x: event.clientX, y: event.clientY };
+  };
+
+  const handleCanvasDrag = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!lastMousePosition.current) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const deltaX = event.clientX - lastMousePosition.current.x;
+    const deltaY = event.clientY - lastMousePosition.current.y;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 좌표 및 도형 이동
+    coordinates.forEach((coordinate) => {
+      coordinate.x += deltaX;
+      coordinate.y += deltaY;
+    });
+
+    shapes.forEach((shape) => {
+      shape.startX += deltaX;
+      shape.startY += deltaY;
+      shape.endX += deltaX;
+      shape.endY += deltaY;
+    });
+
+    lastMousePosition.current = { x: event.clientX, y: event.clientY };
+
+    drawCoordinate(ctx);
+    drawShape(ctx);
+  };
+
+  const handleCanvasDragEnd = () => {
+    lastMousePosition.current = null;
+  };
+
+
 
 
   return (
@@ -484,6 +530,10 @@ const App = () => {
         className="border border-black"
         onClick={handleCanvasClick}
         onWheel={handleCanvasWheel}
+        onMouseDown={handleCanvasDragStart} // 드래그 시작
+        onMouseMove={handleCanvasDrag} // 드래그 중
+        onMouseUp={handleCanvasDragEnd} // 드래그 종료
+        onMouseLeave={handleCanvasDragEnd} // 캔버스 벗어날 시 드래그 종료
       />
 
       <div className="m-2">
@@ -503,7 +553,7 @@ const App = () => {
         </button>
         
         {isWrongAnswer && <div>정삼각형이 없어요</div>}
-        {/* <div> shapes {JSON.stringify(shapes)}</div> */}
+        <div> shapes {JSON.stringify(shapes)}</div>
       </div>
     </div>
   );
