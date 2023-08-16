@@ -414,7 +414,7 @@ const App = () => {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    const scaleFactor = event.deltaY > 0 ? 1.1 : 0.9; // 확대 또는 축소 비율
+    const scaleFactor = event.deltaY > 0 ? 0.9 : 1.1 ; // 확대 또는 축소 비율
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -452,25 +452,28 @@ const App = () => {
     const deltaX = event.clientX - lastMousePosition.current.x;
     const deltaY = event.clientY - lastMousePosition.current.y;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (Math.abs(deltaX) >= 10 || Math.abs(deltaY) >= 10) {
+      // 이동 거리가 10 이상일 때에만 좌표 및 도형 이동 처리
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 좌표 및 도형 이동
-    coordinates.forEach((coordinate) => {
-      coordinate.x += deltaX;
-      coordinate.y += deltaY;
-    });
+      // 좌표 및 도형 이동
+      coordinates.forEach((coordinate) => {
+        coordinate.x += deltaX;
+        coordinate.y += deltaY;
+      });
 
-    shapes.forEach((shape) => {
-      shape.startX += deltaX;
-      shape.startY += deltaY;
-      shape.endX += deltaX;
-      shape.endY += deltaY;
-    });
+      shapes.forEach((shape) => {
+        shape.startX += deltaX;
+        shape.startY += deltaY;
+        shape.endX += deltaX;
+        shape.endY += deltaY;
+      });
 
-    lastMousePosition.current = { x: event.clientX, y: event.clientY };
+      drawCoordinate(ctx);
+      drawShape(ctx);
 
-    drawCoordinate(ctx);
-    drawShape(ctx);
+      lastMousePosition.current = { x: event.clientX, y: event.clientY };
+    }
   };
 
   const handleCanvasDragEnd = () => {
@@ -553,7 +556,7 @@ const App = () => {
         </button>
         
         {isWrongAnswer && <div>정삼각형이 없어요</div>}
-        <div> shapes {JSON.stringify(shapes)}</div>
+        {/* <div> shapes {JSON.stringify(shapes)}</div> */}
       </div>
     </div>
   );
