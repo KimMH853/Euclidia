@@ -5,7 +5,6 @@ const getNewCoordinates = (x1: number, y1: number, r1: number,  x2: number, y2: 
 
   if(y1 === y2) {
     // x축 평행시
-    console.log("x축 평행시")
     let newXPoint;
     if(x1>x2){
       newXPoint = x2 + (x1-x2)/2;
@@ -20,7 +19,6 @@ const getNewCoordinates = (x1: number, y1: number, r1: number,  x2: number, y2: 
     
   } else if(x1 === x2) {
     // y축 평행시
-    console.log("y축 평행시")
     let newYPoint;
     if(y1>y2){
       newYPoint = y2 + (y1-y2)/2;
@@ -34,7 +32,6 @@ const getNewCoordinates = (x1: number, y1: number, r1: number,  x2: number, y2: 
     return [{x: newXPoint1, y: newYPoint}, {x: newXPoint2, y: newYPoint}];
 
   } else {
-    console.log("그외")
 
     const eq = `(x-${x1})^2+(y-${y1})^2-${r1}^2-(x-${x2})^2-(y-${y2})^2+${r2}^2`
     const circleEq1 = `(x-${x1})^2+(y-${y1})^2-${r1}^2`
@@ -46,7 +43,6 @@ const getNewCoordinates = (x1: number, y1: number, r1: number,  x2: number, y2: 
     const solX = nerdamer.solve(solXEqSlice, 'x').evaluate();
     const solXText = solX.text();
     const xArray = solXText.slice(1, -1).split(',').map(Number);
-    console.log(xArray)
     
     //y좌표 구하기
     //const lineEqX = nerdamer.solve(eq, 'x');
@@ -60,7 +56,6 @@ const getNewCoordinates = (x1: number, y1: number, r1: number,  x2: number, y2: 
       const y = solYText.slice(1, -1).split(',').map(Number);
       yArray1.push(...y);
     });
-    console.log(yArray1)
     const yArray2:number[] = [];
     xArray.forEach((x:number) => {
       const solYEq = nerdamer(circleEq2, { x: x }).text();

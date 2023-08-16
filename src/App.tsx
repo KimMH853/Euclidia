@@ -7,6 +7,7 @@ import getDistanceToLine from "./util/getDistanceToLine";
 import getDistanceBetweenCoordinates from "./util/getDistanceBetweenCoordinates";
 import initialCoordinates from "./problems/coordinatesData";
 import initialShapes from "./problems/shapesData";
+import cloneDeep from "lodash/cloneDeep";
 
 type Shape = {
   type?: string;
@@ -18,16 +19,16 @@ type Shape = {
 };
 
 type Coordinate = {
-  tag?: string; 
-  x: number; 
-  y: number; 
+  tag?: string;
+  x: number;
+  y: number;
   selected?: boolean;
-}
+};
 
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const selectedCoordinates = useRef<Coordinate[]>([]);
-  
+
   const [coordinates, setCoordinates] = useState<Coordinate[]>([]);
   const [shapes, setShapes] = useState<Shape[]>([]);
   const [currentSelectedTool, setCurrentSelectedTool] = useState("");
@@ -35,30 +36,25 @@ const App = () => {
 
   const [problemIndex, setProblemIndex] = useState(0);
 
-  
   const lastMousePosition = useRef<{ x: number; y: number } | null>(null); // 마우스의 마지막 위치
-  
 
   //점과 도형 그리기
   useEffect(() => {
     initDraw();
   }, []);
 
-  useEffect(()=>{
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     drawShape(ctx);
     drawCoordinate(ctx);
-  
-  },[coordinates, shapes])
-
+  }, [coordinates, shapes]);
 
   useEffect(() => {
     const savedCoordinates = localStorage.getItem("coordinates");
@@ -76,8 +72,6 @@ const App = () => {
       setShapes(initialShapes[problemIndex]);
     }
   }, [problemIndex]);
-
-
 
   const initDraw = () => {
     // 초기 문제 그려주기(문제와 관련된 점 그려주기)
@@ -168,8 +162,6 @@ const App = () => {
   ) => {
     const [start, end] = selectedCoordinates.current;
 
-    
-
     const newShape: Shape = {
       type: currentSelectedTool,
       startX: start.x,
@@ -202,7 +194,6 @@ const App = () => {
     ctx: CanvasRenderingContext2D,
     currentSelectedTool: string
   ) => {
-    
     const [start, end] = selectedCoordinates.current;
     const newShape: Shape = {
       type: currentSelectedTool,
@@ -220,10 +211,9 @@ const App = () => {
         shape.endX === newShape.endX &&
         shape.endY === newShape.endY
     );
-    
-    if (isShapeAlreadyExist) return; 
 
-    
+    if (isShapeAlreadyExist) return;
+
     const radius = distanceBetweenPoints(start.x, start.y, end.x, end.y);
     ctx.beginPath();
     ctx.arc(start.x, start.y, radius, 0, 2 * Math.PI);
@@ -234,20 +224,30 @@ const App = () => {
 
     //새로운 좌표 얻기
     //1. shapes에 원이 1개 이상이면
-    const circles = shapes.filter((shape)=>shape.type === 'circle')
-    if(circles.length === 0) return;
+    const circles = shapes.filter((shape) => shape.type === "circle");
+    if (circles.length === 0) return;
 
     //2. 새로운 원과 기존의 원들의 겹치는 부분의 좌표를 얻는다
-    const newCoordinates:{x:number,y:number}[] = [];
+    const newCoordinates: { x: number; y: number }[] = [];
 
-    circles.forEach((circle, index) =>{
-      
-      const existingCircleRadius = distanceBetweenPoints(circle.startX, circle.startY, circle.endX, circle.endY)
+    circles.forEach((circle, index) => {
+      const existingCircleRadius = distanceBetweenPoints(
+        circle.startX,
+        circle.startY,
+        circle.endX,
+        circle.endY
+      );
 
-      const result = getNewCoordinates(start.x, start.y, radius, circle.startX, circle.startY, existingCircleRadius)
+      const result = getNewCoordinates(
+        start.x,
+        start.y,
+        radius,
+        circle.startX,
+        circle.startY,
+        existingCircleRadius
+      );
       newCoordinates.push(...result);
-
-    })
+    });
 
     //3. 기존 좌표와 중복체크
     const nonOverlappingCoordinates = newCoordinates.filter(
@@ -264,28 +264,34 @@ const App = () => {
     );
 
     //4. 그리기
-    if(nonOverlappingCoordinates.length ===0) return;
-    nonOverlappingCoordinates.forEach(({x, y}, index)=>{
+    if (nonOverlappingCoordinates.length === 0) return;
+    nonOverlappingCoordinates.forEach(({ x, y }, index) => {
       ctx.beginPath();
       ctx.arc(x, y, 2, 0, 2 * Math.PI);
       ctx.fillStyle = "black";
       ctx.fill();
       ctx.font = "12px sans-serif";
-      ctx.fillText(String.fromCharCode(coordinates.length + index + 65), x - 4, y - 6);
-    })
+      ctx.fillText(
+        String.fromCharCode(coordinates.length + index + 65),
+        x - 4,
+        y - 6
+      );
+    });
 
-    setCoordinates((prev)=>[...prev, ...nonOverlappingCoordinates.map((coordinate, index) => ({
-      tag: String.fromCharCode(coordinates.length + index +65),
-      x: coordinate.x,
-      y: coordinate.y,
-      selected: false,
-    }))])
-
+    setCoordinates((prev) => [
+      ...prev,
+      ...nonOverlappingCoordinates.map((coordinate, index) => ({
+        tag: String.fromCharCode(coordinates.length + index + 65),
+        x: coordinate.x,
+        y: coordinate.y,
+        selected: false,
+      })),
+    ]);
   };
 
-  const deleteShape = (x:number, y:number) => {
+  const deleteShape = (x: number, y: number) => {
     let clickedShape: Shape[] = [];
-  
+
     // 직선을 클릭한 건지 확인하기
     clickedShape = shapes.filter((shape) => {
       const { type, startX, startY, endX, endY } = shape;
@@ -296,21 +302,24 @@ const App = () => {
       }
       return true; // 다른 타입의 도형은 그대로 유지
     });
-  
+
     // 원을 클릭한 건지 확인하기
     clickedShape = clickedShape.filter((shape) => {
       const { type, startX, startY, endX, endY } = shape;
       if (type === "circle") {
-        const radius = getDistanceBetweenCoordinates(startX, startY, endX, endY);
+        const radius = getDistanceBetweenCoordinates(
+          startX,
+          startY,
+          endX,
+          endY
+        );
         const distance = getDistanceBetweenCoordinates(startX, startY, x, y);
-        return Math.abs(radius - distance) > 10 ; // 클릭한 거리가 반지름보다 크거나 같으면 유지
+        return Math.abs(radius - distance) > 10; // 클릭한 거리가 반지름보다 크거나 같으면 유지
       }
       return true; // 다른 타입의 도형은 그대로 유지
     });
 
     setShapes(clickedShape); // shapes 배열 업데이트
-    
-    
   };
 
   const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -332,22 +341,26 @@ const App = () => {
     }
 
     // 클릭 된 지점의 좌표의 위치를 점 배열과 비교 하고 거리가 10 이내면, 점을 그리기위한배열에 좌표 추가
-    if(currentSelectedTool === "line" || currentSelectedTool === "circle") {
+    if (currentSelectedTool === "line" || currentSelectedTool === "circle") {
       addSelectedCoordinates(x, y);
     }
-    
-    // 조건1. 선택된 툴이 직선일 때 
-    if (currentSelectedTool === "line" && selectedCoordinates.current.length === 2) {
+
+    // 조건1. 선택된 툴이 직선일 때
+    if (
+      currentSelectedTool === "line" &&
+      selectedCoordinates.current.length === 2
+    ) {
       drawLine(ctx, currentSelectedTool);
     }
 
     // 조건2. 선택된 툴이 원일 때
-    if (currentSelectedTool === "circle" && selectedCoordinates.current.length === 2) {
+    if (
+      currentSelectedTool === "circle" &&
+      selectedCoordinates.current.length === 2
+    ) {
       drawCircle(ctx, currentSelectedTool);
     }
 
-    
-    
     drawCoordinate(ctx);
     drawShape(ctx);
 
@@ -386,22 +399,27 @@ const App = () => {
 
   const handleAnswerButtonClick = () => {
     //정답확인 버튼 클릭
-    const triangle = equilateralTriangle(shapes)
+    const copiedShapes = cloneDeep(shapes); // shapes 배열의 복사본을 만듦
+    const triangle = equilateralTriangle(copiedShapes); // 복사본을 사용하여 정삼각형 확인
+    console.log("triangle")
+    console.log(triangle)
     if (triangle) {
       const updatedShapes = shapes.map((shape) =>
         triangle.includes(shape) ? { ...shape, selected: true } : shape
       );
+      console.log(updatedShapes)
       setShapes(updatedShapes);
       setIsWrongAnswer(false);
+      console.log("바뀜")
     } else {
       setIsWrongAnswer(true);
+      console.log("안바뀜")
     }
-    
   };
 
-  const handleNextProblemClick = () =>{
-    setProblemIndex((prev) => prev+1)
-  }
+  const handleNextProblemClick = () => {
+    setProblemIndex((prev) => prev + 1);
+  };
 
   const handleCanvasWheel = (event: React.WheelEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -414,7 +432,7 @@ const App = () => {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    const scaleFactor = event.deltaY > 0 ? 1.1 : 0.9; // 확대 또는 축소 비율
+    const scaleFactor = event.deltaY > 0 ? 0.9 : 1.1; // 확대 또는 축소 비율
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -435,7 +453,9 @@ const App = () => {
     drawShape(ctx);
   };
 
-  const handleCanvasDragStart = (event: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleCanvasDragStart = (
+    event: React.MouseEvent<HTMLCanvasElement>
+  ) => {
     lastMousePosition.current = { x: event.clientX, y: event.clientY };
   };
 
@@ -452,33 +472,33 @@ const App = () => {
     const deltaX = event.clientX - lastMousePosition.current.x;
     const deltaY = event.clientY - lastMousePosition.current.y;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (Math.abs(deltaX) >= 10 || Math.abs(deltaY) >= 10) {
+      // 이동 거리가 10 이상일 때에만 좌표 및 도형 이동 처리
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 좌표 및 도형 이동
-    coordinates.forEach((coordinate) => {
-      coordinate.x += deltaX;
-      coordinate.y += deltaY;
-    });
+      // 좌표 및 도형 이동
+      coordinates.forEach((coordinate) => {
+        coordinate.x += deltaX;
+        coordinate.y += deltaY;
+      });
 
-    shapes.forEach((shape) => {
-      shape.startX += deltaX;
-      shape.startY += deltaY;
-      shape.endX += deltaX;
-      shape.endY += deltaY;
-    });
+      shapes.forEach((shape) => {
+        shape.startX += deltaX;
+        shape.startY += deltaY;
+        shape.endX += deltaX;
+        shape.endY += deltaY;
+      });
 
-    lastMousePosition.current = { x: event.clientX, y: event.clientY };
+      drawCoordinate(ctx);
+      drawShape(ctx);
 
-    drawCoordinate(ctx);
-    drawShape(ctx);
+      lastMousePosition.current = { x: event.clientX, y: event.clientY };
+    }
   };
 
   const handleCanvasDragEnd = () => {
     lastMousePosition.current = null;
   };
-
-
-
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
@@ -522,7 +542,7 @@ const App = () => {
           삭제
         </button>
       </div>
-    
+
       <canvas
         ref={canvasRef}
         width={400}
@@ -551,7 +571,7 @@ const App = () => {
         >
           다음
         </button>
-        
+
         {isWrongAnswer && <div>정삼각형이 없어요</div>}
         <div> shapes {JSON.stringify(shapes)}</div>
       </div>
