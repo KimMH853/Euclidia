@@ -1,7 +1,7 @@
 import nerdamer from "nerdamer/all.js";
 import makeComparableValue from "./makeComparableValue";
 
-const getNewCoordinates = (x1: number, y1: number, r1: number,  x2: number, y2: number, r2: number, index: number): { x: number; y: number; }[] =>{
+const getNewCoordinates = (x1: number, y1: number, r1: number,  x2: number, y2: number, r2: number): { x: number; y: number; }[] =>{
 
   if(y1 === y2) {
     // x축 평행시

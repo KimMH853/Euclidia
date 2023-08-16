@@ -5,6 +5,8 @@ import makeComparableValue from "./util/makeComparableValue";
 import getNewCoordinates from "./util/getNewCoordinates";
 import getDistanceToLine from "./util/getDistanceToLine";
 import getDistanceBetweenCoordinates from "./util/getDistanceBetweenCoordinates";
+import initialCoordinates from "./problems/coordinatesData";
+import initialShapes from "./problems/shapesData";
 
 type Shape = {
   type?: string;
@@ -15,25 +17,24 @@ type Shape = {
   selected?: boolean;
 };
 
+type Coordinate = {
+  tag?: string; 
+  x: number; 
+  y: number; 
+  selected?: boolean;
+}
+
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  const [coordinates, setCoordinates] = useState<
-    { tag: string; x: number; y: number; selected: boolean }[]
-  >([
-    { tag: "A", x: 150, y: 200, selected: false },
-    { tag: "B", x: 250, y: 200, selected: false },
-  ]);
-  const [shapes, setShapes] = useState<Shape[]>([]);
-
-  const [currentSelectedTool, setCurrentSelectedTool] = useState("");
-
-  const [isWrongAnswer, setIsWrongAnswer] = useState(false);
-  const [isAnswerClicked, setIsAnswerClicked] = useState(false);
-
+  const selectedCoordinates = useRef<Coordinate[]>([]);
   
+  const [coordinates, setCoordinates] = useState<Coordinate[]>([]);
+  const [shapes, setShapes] = useState<Shape[]>([]);
+  const [currentSelectedTool, setCurrentSelectedTool] = useState("");
+  const [isWrongAnswer, setIsWrongAnswer] = useState(false);
 
-  const selectedCoordinates = useRef<{ x: number; y: number }[]>([]);
+  const [problemIndex, setProblemIndex] = useState(0);
+  
 
   //점과 도형 그리기
   useEffect(() => {
@@ -46,11 +47,34 @@ const App = () => {
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     drawShape(ctx);
     drawCoordinate(ctx);
+  
   },[coordinates, shapes])
+
+
+  useEffect(() => {
+    const savedCoordinates = localStorage.getItem("coordinates");
+    const savedShapes = localStorage.getItem("shapes");
+
+    if (savedCoordinates) {
+      setCoordinates(JSON.parse(savedCoordinates));
+    } else {
+      setCoordinates(initialCoordinates[problemIndex]);
+    }
+
+    if (savedShapes) {
+      setShapes(JSON.parse(savedShapes));
+    } else {
+      setShapes(initialShapes[problemIndex]);
+    }
+  }, [problemIndex]);
+
+
 
   const initDraw = () => {
     // 초기 문제 그려주기(문제와 관련된 점 그려주기)
@@ -68,7 +92,7 @@ const App = () => {
       ctx.fillStyle = "black";
       ctx.fill();
       ctx.font = "12px sans-serif";
-      ctx.fillText(coordinate.tag, coordinate.x - 4, coordinate.y - 6);
+      ctx.fillText(coordinate.tag!, coordinate.x - 4, coordinate.y - 6);
     });
   };
 
@@ -79,7 +103,7 @@ const App = () => {
       ctx.fillStyle = coordinate.selected ? "blue" : "black";
       ctx.fill();
       ctx.font = "12px sans-serif";
-      ctx.fillText(coordinate.tag, coordinate.x - 4, coordinate.y - 6);
+      ctx.fillText(coordinate.tag!, coordinate.x - 4, coordinate.y - 6);
     });
   };
 
@@ -217,7 +241,7 @@ const App = () => {
       
       const existingCircleRadius = distanceBetweenPoints(circle.startX, circle.startY, circle.endX, circle.endY)
 
-      const result = getNewCoordinates(start.x, start.y, radius, circle.startX, circle.startY, existingCircleRadius, index)
+      const result = getNewCoordinates(start.x, start.y, radius, circle.startX, circle.startY, existingCircleRadius)
       newCoordinates.push(...result);
 
     })
@@ -358,7 +382,7 @@ const App = () => {
   };
 
   const handleAnswerButtonClick = () => {
-    //
+    //정답확인 버튼 클릭
     const triangle = equilateralTriangle(shapes)
     if (triangle) {
       const updatedShapes = shapes.map((shape) =>
@@ -371,6 +395,11 @@ const App = () => {
     }
     
   };
+
+  const handleNextProblemClick = () =>{
+    setProblemIndex((prev) => prev+1)
+  }
+
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
@@ -414,7 +443,7 @@ const App = () => {
           삭제
         </button>
       </div>
-
+    
       <canvas
         ref={canvasRef}
         width={400}
@@ -423,13 +452,20 @@ const App = () => {
         onClick={handleCanvasClick}
       />
 
-      <div>
+      <div className="m-2">
         <button
-          className="px-4 py-2 bg-blue-500 text-white rounded cursor-pointer"
+          className="mr-2 px-4 py-2 bg-blue-500 text-white rounded cursor-pointer"
           name="circle"
           onClick={handleAnswerButtonClick}
         >
           확인
+        </button>
+        <button
+          className="mr-2 px-4 py-2 bg-blue-500 text-white rounded cursor-pointer"
+          name="circle"
+          onClick={handleNextProblemClick}
+        >
+          다음
         </button>
         
         {isWrongAnswer && <div>정삼각형이 없어요</div>}
