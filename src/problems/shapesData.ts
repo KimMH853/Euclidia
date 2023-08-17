@@ -1,15 +1,20 @@
-// shapesData.js
-
-const initialShapes = [
-  // Initial shapes for problem 1
+const shapesData = [
   [
     {"type":"line","startX":250,"startY":200,"endX":150,"endY":200,"selected":false}
   ],
-  // Initial shapes for problem 2
   [
-    // Define shapes for problem 2
+    {"type":"line","startX":200,"startY":200,"endX":300,"endY":200,"selected":false}
   ],
-  // Define initial shapes for other problems if needed
+  [
+    {"type":"line","startX":200,"startY":50,"endX":100,"endY":300,"selected":false},
+    {"type":"line","startX":200,"startY":50,"endX":300,"endY":300,"selected":false}
+  ],
+  [
+    {"type":"line","startX":100,"startY":200,"endX":300,"endY":200,"selected":false}
+  ],
+  [
+    {"type":"line","startX":100,"startY":250,"endX":300,"endY":250,"selected":false}
+  ],
 ];
 
-export default initialShapes;
+export default shapesData;

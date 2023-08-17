@@ -5,8 +5,9 @@ import makeComparableValue from "./util/makeComparableValue";
 import getNewCoordinates from "./util/getNewCoordinates";
 import getDistanceToLine from "./util/getDistanceToLine";
 import getDistanceBetweenCoordinates from "./util/getDistanceBetweenCoordinates";
-import initialCoordinates from "./problems/coordinatesData";
-import initialShapes from "./problems/shapesData";
+import coordinatesData from "./problems/coordinatesData";
+import shapesData from "./problems/shapesData";
+import problemsData from "./problems/problemsData";
 
 type Shape = {
   type?: string;
@@ -33,6 +34,7 @@ const App = () => {
   const [currentSelectedTool, setCurrentSelectedTool] = useState("");
   const [isWrongAnswer, setIsWrongAnswer] = useState(false);
 
+  const [problemText, setProblemText] = useState("");
   const [problemIndex, setProblemIndex] = useState(0);
 
   
@@ -63,17 +65,24 @@ const App = () => {
   useEffect(() => {
     const savedCoordinates = localStorage.getItem("coordinates");
     const savedShapes = localStorage.getItem("shapes");
+    const savedProblems = localStorage.getItem("problems");
+
+    if(savedProblems) {
+      setProblemText(JSON.parse(savedProblems));
+    } else {
+      setProblemText(problemsData[problemIndex]);
+    }
 
     if (savedCoordinates) {
       setCoordinates(JSON.parse(savedCoordinates));
     } else {
-      setCoordinates(initialCoordinates[problemIndex]);
+      setCoordinates(coordinatesData[problemIndex]);
     }
 
     if (savedShapes) {
       setShapes(JSON.parse(savedShapes));
     } else {
-      setShapes(initialShapes[problemIndex]);
+      setShapes(shapesData[problemIndex]);
     }
   }, [problemIndex]);
 
@@ -486,7 +495,7 @@ const App = () => {
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <div className="mb-4">
-        On a given finite right line (AB) to construct an equilateral triangle.
+        {problemText}
       </div>
 
       <div className="m-2">
