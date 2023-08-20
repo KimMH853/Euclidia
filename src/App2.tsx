@@ -1,113 +1,83 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect } from "react";
 
-function CanvasWithZoomAndDrag() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [prevMousePos, setPrevMousePos] = useState<{ x: number; y: number } | null>(null);
-  const [canvasPos, setCanvasPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [scale, setScale] = useState(1);
-  const startPoint = { x: 100, y: 200 };
-  const endPoint = { x: 300, y: 200 };
+const App = () => {
+  const canvasRef = useRef(null);
+  const isDrawing = useRef(false);
+  const startX = useRef(0);
+  const startY = useRef(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
 
+    if(!canvas) return;
+    
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
 
-    const handleWheel = (event: WheelEvent) => {
-      event.preventDefault();
-      console.log("WheelEvent")
-      const mousePosX = event.clientX - canvas.getBoundingClientRect().left;
-      const mousePosY = event.clientY - canvas.getBoundingClientRect().top;
-      const wheelDelta = Math.sign(event.deltaY);
-
-      const zoomFactor = 1.1; // 확대/축소 배율 조절
-
-      // 마우스 위치를 기준으로 확대/축소
-      const newScale = scale * zoomFactor ** wheelDelta;
-      const scaleRatio = newScale / scale;
-
-      const offsetX = mousePosX - (mousePosX - canvasPos.x) * scaleRatio;
-      const offsetY = mousePosY - (mousePosY - canvasPos.y) * scaleRatio;
-
-      setScale(newScale);
-      setCanvasPos({ x: offsetX, y: offsetY });
+    const handleMouseDown = (e) => {
+      isDrawing.current = true;
+      startX.current = e.clientX - canvas.getBoundingClientRect().left;
+      startY.current = e.clientY - canvas.getBoundingClientRect().top;
     };
 
-    const handleMouseDown = (event: MouseEvent) => {
-      event.preventDefault();
+    const handleMouseMove = (e) => {
+      if (!isDrawing.current) return;
 
-      setIsDragging(true);
-      setPrevMousePos({ x: event.clientX, y: event.clientY });
-    };
+      const mouseX = e.clientX - canvas.getBoundingClientRect().left;
+      const mouseY = e.clientY - canvas.getBoundingClientRect().top;
 
-    const handleMouseMove = (event: MouseEvent) => {
-      if (!isDragging) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      //drawLine(ctx, startX.current, startY.current, mouseX, mouseY);
+      const angle = Math.atan2(200 - 100, 250 - 150);
+      const length = Math.sqrt(
+        (mouseX - startX.current) ** 2 + (mouseY - startY.current) ** 2
+      );
 
-      const mousePos = { x: event.clientX, y: event.clientY };
-      const offsetX = mousePos.x - prevMousePos!.x;
-      const offsetY = mousePos.y - prevMousePos!.y;
-
-      setCanvasPos((prevPos) => ({
-        x: prevPos.x + offsetX,
-        y: prevPos.y + offsetY,
-      }));
-
-      setPrevMousePos(mousePos);
+      ctx.beginPath();
+      ctx.moveTo(startX.current, startY.current);
+      ctx.lineTo(
+        startX.current + length * Math.cos(angle),
+        startY.current + length * Math.sin(angle)
+      );
+      ctx.stroke();
+      ctx.closePath();
     };
 
     const handleMouseUp = () => {
-      setIsDragging(false);
-      setPrevMousePos(null);
+      isDrawing.current = false;
     };
 
-    const redrawCanvas = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      ctx.save();
-      ctx.translate(canvasPos.x, canvasPos.y);
-      ctx.scale(scale, scale);
-
-      // 캔버스에 그리기 로직 추가
-      // 시작점 그리기
-      ctx.beginPath();
-      ctx.arc(startPoint.x, startPoint.y, 3, 0, 2 * Math.PI);
-      ctx.fillStyle = "black";
-      ctx.fill();
-
-      // 끝점 그리기
-      ctx.beginPath();
-      ctx.arc(endPoint.x, endPoint.y, 3, 0, 2 * Math.PI);
-      ctx.fillStyle = "black";
-      ctx.fill();
-
-      ctx.restore();
-    };
-
-    // 캔버스에 이벤트 리스너 등록
-    canvas.addEventListener("wheel", handleWheel, { passive: false });
     canvas.addEventListener("mousedown", handleMouseDown);
     canvas.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+    canvas.addEventListener("mouseup", handleMouseUp);
 
-    redrawCanvas();
-
-    // 컴포넌트 언마운트 시 이벤트 리스너 제거
     return () => {
-      canvas.removeEventListener("wheel", handleWheel);
       canvas.removeEventListener("mousedown", handleMouseDown);
       canvas.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
+      canvas.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isDragging, prevMousePos, canvasPos, scale]);
+  }, []);
+
+  const drawLine = (ctx, x1, y1, x2, y2) => {
+    const angle = Math.atan2(200 - 200, 250 - 150);
+    const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x1 + length * Math.cos(angle), y1 + length * Math.sin(angle));
+    ctx.stroke();
+    ctx.closePath();
+  };
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
-      <canvas ref={canvasRef} width={400} height={400} className="border border-black mb-4" />
+      <canvas
+        ref={canvasRef}
+        width={400}
+        height={400}
+        className="border border-black"
+      />
     </div>
   );
-}
+};
 
-export default CanvasWithZoomAndDrag;
+export default App;
