@@ -121,7 +121,7 @@ const App = () => {
         ctx.beginPath();
         ctx.moveTo(shape.startX, shape.startY);
         ctx.lineTo(shape.endX, shape.endY);
-        ctx.strokeStyle = shape.isAnswer ? "red" : "black";
+        ctx.strokeStyle = shape.selected ? "red" : "black";
         ctx.stroke();
       } else if (shape.type === "circle") {
         const radius = Math.sqrt(
@@ -179,15 +179,16 @@ const App = () => {
         
         if(distance < 10 && !isCoordClicked){
           shape.selected = !shape.selected
-          if(shape.selected){
-            ctx.beginPath();
-            ctx.arc(shape.startX, shape.startY, 4, 0, 2 * Math.PI);
-            ctx.arc(shape.endX, shape.endY, 4, 0, 2 * Math.PI);
-            ctx.fillStyle = "black";
-            ctx.fill();
-            ctx.strokeStyle = "black";
-            ctx.stroke();
-          }
+          console.log(shape)
+          // if(shape.selected){
+          //   ctx.beginPath();
+          //   ctx.arc(shape.startX, shape.startY, 4, 0, 2 * Math.PI);
+          //   ctx.arc(shape.endX, shape.endY, 4, 0, 2 * Math.PI);
+          //   ctx.fillStyle = "black";
+          //   ctx.fill();
+          //   ctx.strokeStyle = "black";
+          //   ctx.stroke();
+          // }
           
           
         }
@@ -526,66 +527,85 @@ const App = () => {
 
   const handleCanvasDrag = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (!lastMousePosition.current) return;
-
+  
     const canvas = canvasRef.current;
     if (!canvas) return;
-
+  
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-
+  
     const rect = canvas.getBoundingClientRect();
     const canvasX = lastMousePosition.current.x - rect.left;
     const canvasY = lastMousePosition.current.y - rect.top;
-
+  
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
-
-    // 클릭한 지점이 좌표 안에 있는지 확인
-    const clickedCoordinate = coordinates.find(
-      (coordinate) =>
-        Math.abs(coordinate.x - canvasX) < 20 &&
-        Math.abs(coordinate.y - canvasY) < 20
+  
+    // Calculate the distance between the two points
+    const distance = Math.sqrt(
+      (mouseX - canvasX) ** 2 + (mouseY - canvasY) ** 2
     );
-
-    if (clickedCoordinate) {
-      const selectedLine = shapes.find(
-        (shape) =>
-          shape.type === "line" &&
-          ((shape.startX === clickedCoordinate.x &&
-            shape.startY === clickedCoordinate.y) ||
-            (shape.endX === clickedCoordinate.x &&
-              shape.endY === clickedCoordinate.y))
+  
+    // Only draw the line if the distance is 10 or more
+    if (distance >= 10) {
+      // 클릭한 지점이 좌표 안에 있는지 확인
+      const clickedCoordinate = coordinates.find(
+        (coordinate) =>
+          Math.abs(coordinate.x - canvasX) < 20 &&
+          Math.abs(coordinate.y - canvasY) < 20
       );
-
-      if (selectedLine) {
-        const angle = Math.atan2(
-          selectedLine.startY - selectedLine.endY,
-          selectedLine.startX - selectedLine.endX
+  
+      if (clickedCoordinate) {
+        const selectedLine = shapes.find(
+          (shape) =>
+            shape.type === "line" &&
+            ((shape.startX === clickedCoordinate.x &&
+              shape.startY === clickedCoordinate.y) ||
+              (shape.endX === clickedCoordinate.x &&
+                shape.endY === clickedCoordinate.y)) &&
+            shape.selected === true
         );
-        //const angle = Math.atan2(200 - 200, 250 - 150);
-        const length = Math.sqrt(
-          (mouseX - clickedCoordinate.x) ** 2 +
-            (mouseY - clickedCoordinate.y) ** 2
-        );
-        const newEndX = clickedCoordinate.x + length * Math.cos(angle);
-        const newEndY = clickedCoordinate.y + length * Math.sin(angle);
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        ctx.beginPath();
-        ctx.moveTo(clickedCoordinate.x, clickedCoordinate.y);
-        ctx.lineTo(newEndX, newEndY);
-        ctx.stroke();
-        ctx.closePath();
-
-        clickedCoord.current = {
-          x: clickedCoordinate.x,
-          y: clickedCoordinate.y,
-          angle,
-        };
-        // 모든 좌표와 도형 다시 그리기
-        drawCoordinate(ctx);
-        drawShape(ctx);
+  
+        if (selectedLine) {
+          let angle = 0;
+          if (
+            selectedLine.startX === clickedCoordinate.x &&
+            selectedLine.startY === clickedCoordinate.y
+          ) {
+            
+            angle = Math.atan2(
+              selectedLine.startY - selectedLine.endY,
+              selectedLine.startX - selectedLine.endX
+            );
+          } else {
+            angle = Math.atan2(
+              selectedLine.endY - selectedLine.startY,
+              selectedLine.endX - selectedLine.startX
+            );
+          }
+  
+          console.log("각도");
+          console.log(angle);
+          const newEndX = clickedCoordinate.x + distance * Math.cos(angle);
+          const newEndY = clickedCoordinate.y + distance * Math.sin(angle);
+  
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+          ctx.beginPath();
+          ctx.moveTo(clickedCoordinate.x, clickedCoordinate.y);
+          ctx.lineTo(newEndX, newEndY);
+          ctx.stroke();
+          ctx.closePath();
+  
+          clickedCoord.current = {
+            x: clickedCoordinate.x,
+            y: clickedCoordinate.y,
+            angle,
+          };
+          // 모든 좌표와 도형 다시 그리기
+          drawCoordinate(ctx);
+          drawShape(ctx);
+        }
       }
     }
   };
