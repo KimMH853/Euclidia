@@ -540,6 +540,9 @@ const App = () => {
   
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
+
+    const deltaX = event.clientX - lastMousePosition.current.x;
+    const deltaY = event.clientY - lastMousePosition.current.y;
   
     // Calculate the distance between the two points
     const distance = Math.sqrt(
@@ -566,7 +569,7 @@ const App = () => {
             shape.selected === true
         );
   
-        if (selectedLine) {
+        if (selectedLine && (Math.abs(deltaX) >= 10 || Math.abs(deltaY) >= 10)) {
           let angle = 0;
           if (
             selectedLine.startX === clickedCoordinate.x &&
@@ -606,6 +609,27 @@ const App = () => {
           drawCoordinate(ctx);
           drawShape(ctx);
         }
+      } else if(!clickedCoordinate && Math.abs(deltaX) >= 10 || Math.abs(deltaY) >= 10) {
+         // 이동 거리가 10 이상일 때에만 좌표 및 도형 이동 처리
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 좌표 및 도형 이동
+        coordinates.forEach((coordinate) => {
+          coordinate.x += deltaX;
+          coordinate.y += deltaY;
+        });
+
+        shapes.forEach((shape) => {
+          shape.startX += deltaX;
+          shape.startY += deltaY;
+          shape.endX += deltaX;
+          shape.endY += deltaY;
+        });
+
+        drawCoordinate(ctx);
+        drawShape(ctx);
+
+        lastMousePosition.current = { x: event.clientX, y: event.clientY };
       }
     }
   };
