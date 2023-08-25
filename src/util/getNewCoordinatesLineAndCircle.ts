@@ -48,6 +48,7 @@ const getNewCoordinatesLineAndCircle =(lineStartX: number, lineStartY: number, l
   if (xCoordinates.length === 1) {
     const xValue = xCoordinates[0];
     const yValue = yCoordinates[0];
+    
     return { x: xValue, y: yValue };
   } else {
     return false;

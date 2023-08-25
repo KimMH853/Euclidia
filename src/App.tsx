@@ -17,7 +17,7 @@ type Shape = {
   endX: number;
   endY: number;
   selected?: boolean;
-  isAnswer?: boolean;
+  extension?: boolean;
 };
 
 type Coordinate = {
@@ -41,7 +41,6 @@ const App = () => {
   const selectedCoordinates = useRef<Coordinate[]>([]);
   const lastMousePosition = useRef<{ x: number; y: number } | null>(null);
   const clickedCoord = useRef<{ x: number; y: number; angle: number } | null>(null);
-  const isLineExtended = useRef(false);
 
   //점과 도형 그리기
   useEffect(() => {
@@ -130,7 +129,7 @@ const App = () => {
         );
         ctx.beginPath();
         ctx.arc(shape.startX, shape.startY, radius, 0, 2 * Math.PI);
-        ctx.strokeStyle = shape.isAnswer ? "blue" : "black";
+        ctx.strokeStyle = shape.selected ? "blue" : "black";
         ctx.stroke();
       }
     });
@@ -332,9 +331,31 @@ const App = () => {
       })),
     ]);
 
-    if(isLineExtended) {
-      const lines = shapes.filter((shape) => shape.type === "line");
-
+    
+    const extendedLines = shapes.filter((shape) => shape.extension === true);
+    if(extendedLines) {
+      extendedLines.forEach((line)=>{
+        const result = getNewCoordinatesLineAndCircle(line.startX, line.startY, line.endX, line.endY, start.x, start.y, radius,)
+        if (result) {
+          //console.log(result);
+          const isDuplication = coordinates.some(
+            (coord) =>
+              makeComparableValue(result.x) === makeComparableValue(coord.x) &&
+              makeComparableValue(result.y) === makeComparableValue(coord.y)
+          );
+          if (!isDuplication) {
+            setCoordinates((prev) => [
+              ...prev,
+              {
+                tag: String.fromCharCode(coordinates.length + 66),
+                x: result.x,
+                y: result.y,
+                selected: false,
+              },
+            ]);
+          }
+        }
+      })
     }
   };
 
@@ -409,6 +430,7 @@ const App = () => {
       selectedCoordinates.current.length === 2
     ) {
       drawCircle(ctx, currentSelectedTool);
+     
     }
 
     drawCoordinate(ctx);
@@ -680,10 +702,9 @@ const App = () => {
           endX: newEndX,
           endY: newEndY,
           selected: false,
+          extension: true,
         },
       ]);
-
-      isLineExtended.current = true;
 
       // 연장된 직선과 기존 원의 교점 찾기
 
@@ -693,7 +714,7 @@ const App = () => {
 
       //2. 새로운 원과 기존의 원들의 겹치는 부분의 좌표를 얻는다
       const newCoordinates: { x: number; y: number }[] = [];
-
+      let i = 1;
       circles.forEach((circle) => {
         const existingCircleRadius = distanceBetweenPoints(
           circle.startX,
@@ -712,7 +733,7 @@ const App = () => {
           existingCircleRadius
         );
         if (result) {
-          //console.log(result);
+          
           const isDuplication = coordinates.some(
             (coord) =>
               makeComparableValue(result.x) === makeComparableValue(coord.x) &&
@@ -722,7 +743,7 @@ const App = () => {
             setCoordinates((prev) => [
               ...prev,
               {
-                tag: String.fromCharCode(coordinates.length + 66),
+                tag: String.fromCharCode(coordinates.length + 63 + i++),
                 x: result.x,
                 y: result.y,
                 selected: false,
@@ -733,6 +754,7 @@ const App = () => {
       });
     }
 
+    
     // 마지막 마우스 위치 초기화
     lastMousePosition.current = null;
   };
@@ -816,7 +838,7 @@ const App = () => {
 
         {isWrongAnswer && <div>정삼각형이 없어요</div>}
         {/* <div> shapes {JSON.stringify(shapes)}</div> */}
-        <div> coordinates {JSON.stringify(coordinates)}</div>
+        {/* <div> coordinates {JSON.stringify(coordinates)}</div> */}
       </div>
     </div>
   );
