@@ -816,7 +816,7 @@ const App = () => {
 
         {isWrongAnswer && <div>정삼각형이 없어요</div>}
         {/* <div> shapes {JSON.stringify(shapes)}</div> */}
-        <div> coordinates {JSON.stringify(coordinates)}</div>
+        {/* <div> coordinates {JSON.stringify(coordinates)}</div> */}
       </div>
     </div>
   );
