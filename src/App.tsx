@@ -135,6 +135,41 @@ const App = () => {
     });
   };
 
+  const addCoordinate = (x: number, y: number) =>{
+    //직선에만 점찍기 가능
+    
+    //직선 위를 클릭 했는지 확인 하기
+    const clickedLine = shapes.find((shape) => {
+      const { type, startX, startY, endX, endY } = shape;
+      if (type === "line") {
+        const distance = getDistanceToLine(x, y, startX, startY, endX, endY);
+        if (distance < 10) {
+          return true;
+        }
+      }
+    });
+
+    //직선의 방정식 알아 냄
+
+    console.log(clickedLine)
+    if(clickedLine){
+      const gradient = (clickedLine.endY-clickedLine.startY)/(clickedLine.endX-clickedLine.startX);
+      const yIntercept = clickedLine.startY - gradient*clickedLine.startX;
+      const lineEqY = `x * ${gradient} + ${yIntercept}`
+
+      const newY = x * gradient + yIntercept;
+      
+      setCoordinates((prev)=> [...prev, {
+        tag: String.fromCharCode(coordinates.length + 65),
+        x: x,
+        y: newY,
+        selected: false}])
+      
+    }
+    
+    //방정식에 x 값 대입해서 좌표 생성
+  }
+
   const addSelectedCoordinates = (x: number, y: number): boolean => {
     const clickedCoordinate = coordinates.filter(
       (coordinate) =>
@@ -436,11 +471,17 @@ const App = () => {
     drawCoordinate(ctx);
     drawShape(ctx);
 
+    if(currentSelectedTool === "coordinate") {
+      addCoordinate(x, y);
+    }
+
     // 조건3. 선택된 툴이 지우개일 때 직선이나 원을 클릭시 해당 도형을 지움
     if (currentSelectedTool === "erase") {
       deleteShape(x, y);
     }
   };
+
+
 
   const handleClickLineButton = () => {
     // 직선버튼 클릭 -> 선택된 툴 직선으로 변경
@@ -457,6 +498,15 @@ const App = () => {
       setCurrentSelectedTool("");
     } else {
       setCurrentSelectedTool("circle");
+    }
+  };
+
+  const handleClickCoordButton = () => {
+    //
+    if (currentSelectedTool === "coordinate") {
+      setCurrentSelectedTool("");
+    } else {
+      setCurrentSelectedTool("coordinate");
     }
   };
 
@@ -786,6 +836,17 @@ const App = () => {
           onClick={handleClickCircleButton}
         >
           원
+        </button>
+        <button
+          className={`mr-2 px-4 py-2 ${
+            currentSelectedTool === "coordinate"
+              ? "bg-blue-500 text-white"
+              : "bg-white text-blue-500 border-blue-500 border"
+          } rounded cursor-pointer`}
+          name="coordinate"
+          onClick={handleClickCoordButton}
+        >
+          점
         </button>
         <button
           className={`mr-2 px-4 py-2 ${
