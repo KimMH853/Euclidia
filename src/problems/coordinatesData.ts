@@ -20,7 +20,7 @@ const coordinatesData = [
   [
     { tag: "A", x: 100, y: 250, selected: false },
     { tag: "B", x: 300, y: 250, selected: false },
-    { tag: "C", x: 200, y: 100, selected: false },
+    { tag: "C", x: 200, y: 250, selected: false },
   ],
 ];
 

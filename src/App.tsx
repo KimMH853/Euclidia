@@ -40,7 +40,9 @@ const App = () => {
 
   const selectedCoordinates = useRef<Coordinate[]>([]);
   const lastMousePosition = useRef<{ x: number; y: number } | null>(null);
-  const clickedCoord = useRef<{ x: number; y: number; angle: number } | null>(null);
+  const clickedCoord = useRef<{ x: number; y: number; angle: number } | null>(
+    null
+  );
 
   //점과 도형 그리기
   useEffect(() => {
@@ -135,9 +137,9 @@ const App = () => {
     });
   };
 
-  const addCoordinate = (x: number, y: number) =>{
+  const addCoordinate = (x: number, y: number) => {
     //직선에만 점찍기 가능
-    
+
     //직선 위를 클릭 했는지 확인 하기
     const clickedLine = shapes.find((shape) => {
       const { type, startX, startY, endX, endY } = shape;
@@ -150,25 +152,26 @@ const App = () => {
     });
 
     //직선의 방정식 알아 냄
-
-    console.log(clickedLine)
-    if(clickedLine){
-      const gradient = (clickedLine.endY-clickedLine.startY)/(clickedLine.endX-clickedLine.startX);
-      const yIntercept = clickedLine.startY - gradient*clickedLine.startX;
-      const lineEqY = `x * ${gradient} + ${yIntercept}`
-
+    if (clickedLine) {
+      const gradient =
+        (clickedLine.endY - clickedLine.startY) /
+        (clickedLine.endX - clickedLine.startX);
+      const yIntercept = clickedLine.startY - gradient * clickedLine.startX;
       const newY = x * gradient + yIntercept;
-      
-      setCoordinates((prev)=> [...prev, {
-        tag: String.fromCharCode(coordinates.length + 65),
-        x: x,
-        y: newY,
-        selected: false}])
-      
+
+      setCoordinates((prev) => [
+        ...prev,
+        {
+          tag: String.fromCharCode(coordinates.length + 65),
+          x: x,
+          y: newY,
+          selected: false,
+        },
+      ]);
     }
-    
+
     //방정식에 x 값 대입해서 좌표 생성
-  }
+  };
 
   const addSelectedCoordinates = (x: number, y: number): boolean => {
     const clickedCoordinate = coordinates.filter(
@@ -300,7 +303,43 @@ const App = () => {
     setShapes((prev) => [...prev, newShape]);
     coordinates.forEach((coordinate) => (coordinate.selected = false));
 
-    //새로운 좌표 얻기
+    //원과 직선의 교점
+    const lines = shapes.filter((shape) => shape.type === "line");
+
+    if (lines) {
+      lines.forEach((line) => {
+        const result = getNewCoordinatesLineAndCircle(
+          line.startX,
+          line.startY,
+          line.endX,
+          line.endY,
+          start.x,
+          start.y,
+          radius
+        );
+        if (result) {
+          //console.log(result);
+          const isDuplication = coordinates.some(
+            (coord) =>
+              makeComparableValue(result.x) === makeComparableValue(coord.x) &&
+              makeComparableValue(result.y) === makeComparableValue(coord.y)
+          );
+          if (!isDuplication) {
+            setCoordinates((prev) => [
+              ...prev,
+              {
+                tag: String.fromCharCode(coordinates.length + 66),
+                x: result.x,
+                y: result.y,
+                selected: false,
+              },
+            ]);
+          }
+        }
+      });
+    }
+
+    //원과 원의 교점
     //1. shapes에 원이 1개 이상이면
     const circles = shapes.filter((shape) => shape.type === "circle");
     if (circles.length === 0) return;
@@ -365,33 +404,6 @@ const App = () => {
         selected: false,
       })),
     ]);
-
-    
-    const extendedLines = shapes.filter((shape) => shape.extension === true);
-    if(extendedLines) {
-      extendedLines.forEach((line)=>{
-        const result = getNewCoordinatesLineAndCircle(line.startX, line.startY, line.endX, line.endY, start.x, start.y, radius,)
-        if (result) {
-          //console.log(result);
-          const isDuplication = coordinates.some(
-            (coord) =>
-              makeComparableValue(result.x) === makeComparableValue(coord.x) &&
-              makeComparableValue(result.y) === makeComparableValue(coord.y)
-          );
-          if (!isDuplication) {
-            setCoordinates((prev) => [
-              ...prev,
-              {
-                tag: String.fromCharCode(coordinates.length + 66),
-                x: result.x,
-                y: result.y,
-                selected: false,
-              },
-            ]);
-          }
-        }
-      })
-    }
   };
 
   const deleteShape = (x: number, y: number) => {
@@ -465,13 +477,12 @@ const App = () => {
       selectedCoordinates.current.length === 2
     ) {
       drawCircle(ctx, currentSelectedTool);
-     
     }
 
     drawCoordinate(ctx);
     drawShape(ctx);
 
-    if(currentSelectedTool === "coordinate") {
+    if (currentSelectedTool === "coordinate") {
       addCoordinate(x, y);
     }
 
@@ -480,8 +491,6 @@ const App = () => {
       deleteShape(x, y);
     }
   };
-
-
 
   const handleClickLineButton = () => {
     // 직선버튼 클릭 -> 선택된 툴 직선으로 변경
@@ -783,7 +792,6 @@ const App = () => {
           existingCircleRadius
         );
         if (result) {
-          
           const isDuplication = coordinates.some(
             (coord) =>
               makeComparableValue(result.x) === makeComparableValue(coord.x) &&
@@ -804,7 +812,6 @@ const App = () => {
       });
     }
 
-    
     // 마지막 마우스 위치 초기화
     lastMousePosition.current = null;
   };
@@ -898,7 +905,7 @@ const App = () => {
         </button>
 
         {isWrongAnswer && <div>정삼각형이 없어요</div>}
-        {/* <div> shapes {JSON.stringify(shapes)}</div> */}
+        <div> shapes {JSON.stringify(shapes)}</div>
         {/* <div> coordinates {JSON.stringify(coordinates)}</div> */}
       </div>
     </div>

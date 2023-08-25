@@ -1,5 +1,4 @@
 import nerdamer from "nerdamer/all.js";
-import makeComparableValue from "./makeComparableValue";
 
 const getNewCoordinatesLineAndCircle =(lineStartX: number, lineStartY: number, lineEndX: number, lineEndY: number, circleX: number, circleY: number, radius: number) =>{
 //
