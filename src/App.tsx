@@ -8,6 +8,7 @@ import getDistanceBetweenCoordinates from "./util/getDistanceBetweenCoordinates"
 import coordinatesData from "./problems/coordinatesData";
 import shapesData from "./problems/shapesData";
 import problemsData from "./problems/problemsData";
+import getNewCoordinatesLineAndCircle from "./util/getNewCoordinatesLineAndCircle";
 
 type Shape = {
   type?: string;
@@ -28,19 +29,19 @@ type Coordinate = {
 
 const App = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const selectedCoordinates = useRef<Coordinate[]>([]);
 
   const [coordinates, setCoordinates] = useState<Coordinate[]>([]);
   const [shapes, setShapes] = useState<Shape[]>([]);
   const [currentSelectedTool, setCurrentSelectedTool] = useState("");
   const [isWrongAnswer, setIsWrongAnswer] = useState(false);
-  
+
   const [problemText, setProblemText] = useState("");
   const [problemIndex, setProblemIndex] = useState(0);
 
-  const lastMousePosition = useRef<{ x: number; y: number } | null>(null); // 마우스의 마지막 위치
+  const selectedCoordinates = useRef<Coordinate[]>([]);
+  const lastMousePosition = useRef<{ x: number; y: number } | null>(null);
   const clickedCoord = useRef<{ x: number; y: number; angle: number } | null>(null);
-  const selectedLine = useRef<Shape | null>(null);
+  const isLineExtended = useRef(false);
 
   //점과 도형 그리기
   useEffect(() => {
@@ -170,16 +171,20 @@ const App = () => {
     }
   };
 
-  const selectLine = (ctx: CanvasRenderingContext2D,x: number, y: number, isCoordClicked: boolean) => {
-    
+  const selectLine = (
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    isCoordClicked: boolean
+  ) => {
     shapes.forEach((shape) => {
       const { type, startX, startY, endX, endY } = shape;
       if (type === "line") {
         const distance = getDistanceToLine(x, y, startX, startY, endX, endY);
-        
-        if(distance < 10 && !isCoordClicked){
-          shape.selected = !shape.selected
-          console.log(shape)
+
+        if (distance < 10 && !isCoordClicked) {
+          shape.selected = !shape.selected;
+
           // if(shape.selected){
           //   ctx.beginPath();
           //   ctx.arc(shape.startX, shape.startY, 4, 0, 2 * Math.PI);
@@ -189,14 +194,10 @@ const App = () => {
           //   ctx.strokeStyle = "black";
           //   ctx.stroke();
           // }
-          
-          
         }
       }
       return true; // 다른 타입의 도형은 그대로 유지
     });
-
-   
   };
 
   const drawLine = (
@@ -273,7 +274,7 @@ const App = () => {
     //2. 새로운 원과 기존의 원들의 겹치는 부분의 좌표를 얻는다
     const newCoordinates: { x: number; y: number }[] = [];
 
-    circles.forEach((circle, index) => {
+    circles.forEach((circle) => {
       const existingCircleRadius = distanceBetweenPoints(
         circle.startX,
         circle.startY,
@@ -330,6 +331,11 @@ const App = () => {
         selected: false,
       })),
     ]);
+
+    if(isLineExtended) {
+      const lines = shapes.filter((shape) => shape.type === "line");
+
+    }
   };
 
   const deleteShape = (x: number, y: number) => {
@@ -386,8 +392,7 @@ const App = () => {
     // 클릭 된 지점의 좌표의 위치를 점 배열과 비교 하고 거리가 10 이내면, 점을 그리기위한배열에 좌표 추가
     if (currentSelectedTool === "line" || currentSelectedTool === "circle") {
       const isCoordClicked = addSelectedCoordinates(x, y);
-      const selectedLine = selectLine(ctx,x,y, isCoordClicked);
-      console.log(selectedLine)
+      const selectedLine = selectLine(ctx, x, y, isCoordClicked);
     }
 
     // 조건1. 선택된 툴이 직선일 때
@@ -415,15 +420,10 @@ const App = () => {
     }
   };
 
-  const handleClickMoveButton = () => {
-    //
-    setCurrentSelectedTool("move");
-  };
-
   const handleClickLineButton = () => {
     // 직선버튼 클릭 -> 선택된 툴 직선으로 변경
     if (currentSelectedTool === "line") {
-      setCurrentSelectedTool("move");
+      setCurrentSelectedTool("");
     } else {
       setCurrentSelectedTool("line");
     }
@@ -432,7 +432,7 @@ const App = () => {
   const handleClickCircleButton = () => {
     // 원버튼 클릭 -> 선택된 툴 원으로 변경
     if (currentSelectedTool === "circle") {
-      setCurrentSelectedTool("move");
+      setCurrentSelectedTool("");
     } else {
       setCurrentSelectedTool("circle");
     }
@@ -441,7 +441,7 @@ const App = () => {
   const handleClickEraseButton = () => {
     // 지우개버튼 클릭 -> 선택된 툴을 지우개로 변경
     if (currentSelectedTool === "erase") {
-      setCurrentSelectedTool("move");
+      setCurrentSelectedTool("");
     } else {
       setCurrentSelectedTool("erase");
     }
@@ -521,34 +521,34 @@ const App = () => {
     //if(currentSelectedTool !== "move") return;
 
     lastMousePosition.current = { x: event.clientX, y: event.clientY };
-    
+
     clickedCoord.current = null;
   };
 
   const handleCanvasDrag = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (!lastMousePosition.current) return;
-  
+
     const canvas = canvasRef.current;
     if (!canvas) return;
-  
+
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-  
+
     const rect = canvas.getBoundingClientRect();
     const canvasX = lastMousePosition.current.x - rect.left;
     const canvasY = lastMousePosition.current.y - rect.top;
-  
+
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
 
     const deltaX = event.clientX - lastMousePosition.current.x;
     const deltaY = event.clientY - lastMousePosition.current.y;
-  
+
     // Calculate the distance between the two points
     const distance = Math.sqrt(
       (mouseX - canvasX) ** 2 + (mouseY - canvasY) ** 2
     );
-  
+
     // Only draw the line if the distance is 10 or more
     if (distance >= 10) {
       // 클릭한 지점이 좌표 안에 있는지 확인
@@ -557,7 +557,7 @@ const App = () => {
           Math.abs(coordinate.x - canvasX) < 20 &&
           Math.abs(coordinate.y - canvasY) < 20
       );
-  
+
       if (clickedCoordinate) {
         const selectedLine = shapes.find(
           (shape) =>
@@ -568,14 +568,16 @@ const App = () => {
                 shape.endY === clickedCoordinate.y)) &&
             shape.selected === true
         );
-  
-        if (selectedLine && (Math.abs(deltaX) >= 10 || Math.abs(deltaY) >= 10)) {
+
+        if (
+          selectedLine &&
+          (Math.abs(deltaX) >= 10 || Math.abs(deltaY) >= 10)
+        ) {
           let angle = 0;
           if (
             selectedLine.startX === clickedCoordinate.x &&
             selectedLine.startY === clickedCoordinate.y
           ) {
-            
             angle = Math.atan2(
               selectedLine.startY - selectedLine.endY,
               selectedLine.startX - selectedLine.endX
@@ -586,20 +588,18 @@ const App = () => {
               selectedLine.endX - selectedLine.startX
             );
           }
-  
-          console.log("각도");
-          console.log(angle);
+
           const newEndX = clickedCoordinate.x + distance * Math.cos(angle);
           const newEndY = clickedCoordinate.y + distance * Math.sin(angle);
-  
+
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
+
           ctx.beginPath();
           ctx.moveTo(clickedCoordinate.x, clickedCoordinate.y);
           ctx.lineTo(newEndX, newEndY);
           ctx.stroke();
           ctx.closePath();
-  
+
           clickedCoord.current = {
             x: clickedCoordinate.x,
             y: clickedCoordinate.y,
@@ -609,8 +609,11 @@ const App = () => {
           drawCoordinate(ctx);
           drawShape(ctx);
         }
-      } else if(!clickedCoordinate && Math.abs(deltaX) >= 10 || Math.abs(deltaY) >= 10) {
-         // 이동 거리가 10 이상일 때에만 좌표 및 도형 이동 처리
+      } else if (
+        (!clickedCoordinate && Math.abs(deltaX) >= 10) ||
+        Math.abs(deltaY) >= 10
+      ) {
+        // 이동 거리가 10 이상일 때에만 좌표 및 도형 이동 처리
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // 좌표 및 도형 이동
@@ -679,6 +682,55 @@ const App = () => {
           selected: false,
         },
       ]);
+
+      isLineExtended.current = true;
+
+      // 연장된 직선과 기존 원의 교점 찾기
+
+      //1. shapes에 원이 1개 이상이면
+      const circles = shapes.filter((shape) => shape.type === "circle");
+      if (circles.length === 0) return;
+
+      //2. 새로운 원과 기존의 원들의 겹치는 부분의 좌표를 얻는다
+      const newCoordinates: { x: number; y: number }[] = [];
+
+      circles.forEach((circle) => {
+        const existingCircleRadius = distanceBetweenPoints(
+          circle.startX,
+          circle.startY,
+          circle.endX,
+          circle.endY
+        );
+
+        const result = getNewCoordinatesLineAndCircle(
+          clickedCoord.current!.x,
+          clickedCoord.current!.y,
+          newEndX,
+          newEndY,
+          circle.startX,
+          circle.startY,
+          existingCircleRadius
+        );
+        if (result) {
+          //console.log(result);
+          const isDuplication = coordinates.some(
+            (coord) =>
+              makeComparableValue(result.x) === makeComparableValue(coord.x) &&
+              makeComparableValue(result.y) === makeComparableValue(coord.y)
+          );
+          if (!isDuplication) {
+            setCoordinates((prev) => [
+              ...prev,
+              {
+                tag: String.fromCharCode(coordinates.length + 66),
+                x: result.x,
+                y: result.y,
+                selected: false,
+              },
+            ]);
+          }
+        }
+      });
     }
 
     // 마지막 마우스 위치 초기화
@@ -690,18 +742,6 @@ const App = () => {
       <div className="mb-4">{problemText}</div>
 
       <div className="m-2">
-        <button
-          className={`mr-2 px-4 py-2 ${
-            currentSelectedTool === "move"
-              ? "bg-blue-500 text-white"
-              : "bg-white text-blue-500 border-blue-500 border"
-          } rounded cursor-pointer`}
-          name="line"
-          onClick={handleClickMoveButton}
-        >
-          이동
-        </button>
-
         <button
           className={`mr-2 px-4 py-2 ${
             currentSelectedTool === "line"
@@ -776,6 +816,7 @@ const App = () => {
 
         {isWrongAnswer && <div>정삼각형이 없어요</div>}
         {/* <div> shapes {JSON.stringify(shapes)}</div> */}
+        <div> coordinates {JSON.stringify(coordinates)}</div>
       </div>
     </div>
   );
