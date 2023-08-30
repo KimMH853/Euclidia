@@ -5,15 +5,15 @@ import getDistanceBetweenCoordinates from "./getDistanceBetweenCoordinates";
 const getNewCoordinatesCircleAndCircle = (x1: number, y1: number, r1: number,  x2: number, y2: number, r2: number) =>{
   const distanceBetweenCircles = getDistanceBetweenCoordinates(x1, y1, x2, y2);
   const isTwoPoints = (r1 + r2 > distanceBetweenCircles) && (Math.abs(r1 -r2) < distanceBetweenCircles) ;
-  console.log(x1, y1, x2, y2)
-  console.log(r1, r2, distanceBetweenCircles)
+  // console.log(x1, y1, x2, y2)
+  // console.log(r1, r2, distanceBetweenCircles)
   
   //const isTwoPoints= true;
-  console.log("isTwoPoints")
+  // console.log("isTwoPoints")
   
-  console.log(isTwoPoints)
-  console.log(r1 + r2 > distanceBetweenCircles)
-  console.log(Math.abs(r1 -r2) < distanceBetweenCircles)
+  // console.log(isTwoPoints)
+  // console.log(r1 + r2 > distanceBetweenCircles)
+  // console.log(Math.abs(r1 -r2) < distanceBetweenCircles)
   if(isTwoPoints) {
     if(y1 === y2) {
       // x축 평행시

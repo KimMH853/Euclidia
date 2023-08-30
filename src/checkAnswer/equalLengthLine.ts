@@ -65,20 +65,11 @@ const equalLengthLine = (coordinates:Coordinate[], shapes:Shape[]) =>{
     }
     
 
+  }else {
+    return false;
   }
 
- 
-  
-    
-  
 
-  
-
-  
-
-  //좌표간 거리를 구하여 bc와 같은 거리를 구하고
-
-  // shape 타입으로 리턴
   
 } 
 

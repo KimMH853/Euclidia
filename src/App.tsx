@@ -11,6 +11,7 @@ import problemsData from "./problems/problemsData";
 import getNewCoordinatesLineAndCircle from "./util/getNewCoordinatesLineAndCircle";
 import getNewCoordinatesLineAndLine from "./util/getNewCoordinatesLineAndLine";
 import checkAnswerData from "./problems/checkAnswerData";
+import equalAngle from "./checkAnswer/equalAngle";
 
 type Shape = {
   type?: string;
