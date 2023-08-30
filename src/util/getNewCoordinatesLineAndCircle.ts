@@ -27,6 +27,8 @@ const getNewCoordinatesLineAndCircle =(lineStartX: number, lineStartY: number, l
     }
     } )
 
+    //console.log(xCoordinates)
+
   const yCoordinates:number[] = [];
 
   if(xCoordinates) {
@@ -37,18 +39,15 @@ const getNewCoordinatesLineAndCircle =(lineStartX: number, lineStartY: number, l
       const y = x*gradient + yIntercept;
       yCoordinates.push(y)
     })
-
-    
-
-
-
   }
+  //console.log(xCoordinates)
 
-  if (xCoordinates.length === 1) {
-    const xValue = xCoordinates[0];
-    const yValue = yCoordinates[0];
-    
-    return { x: xValue, y: yValue };
+  //console.log(yCoordinates)
+  if (xCoordinates && xCoordinates.length === 1) {  
+    return [{ x: xCoordinates[0], y: yCoordinates[0] }];
+  } else if(xCoordinates && xCoordinates.length === 2) {
+
+    return [{ x: xCoordinates[0], y: yCoordinates[0] }, { x: xCoordinates[1], y: yCoordinates[1] }];
   } else {
     return false;
   }

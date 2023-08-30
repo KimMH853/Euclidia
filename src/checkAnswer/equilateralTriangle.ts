@@ -1,5 +1,13 @@
 import getDistanceBetweenCoordinates from "../util/getDistanceBetweenCoordinates";
 import makeComparableValue from "../util/makeComparableValue";
+type Coordinate = {
+  tag?: string;
+  x: number;
+  y: number;
+  selected?: boolean;
+};
+
+
 
 type Shape = {
   type?: string;
@@ -10,7 +18,7 @@ type Shape = {
   selected?: boolean;
 };
 
-const equilateralTriangle = (shapes: Shape[]) => {
+const equilateralTriangle = ( coordinates:Coordinate[], shapes:Shape[]) => {
   // shapes에서 타입 line 이 3개  이상인가
   const lines = shapes.filter((shape) => shape.type === "line");
   if (lines.length < 3) return false;
