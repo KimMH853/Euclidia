@@ -269,15 +269,11 @@ const App = () => {
     if(lines) {
       lines.forEach((line)=>{
         const newCoordinate = getNewCoordinatesLineAndLine(start.x, start.y, end.x, end.y, line.startX, line.startY, line.endX, line.endY)
-        console.log(newCoordinate)
         if(newCoordinate) {
-
           const isOverlappingCoords = coordinates.some(coord => {
               return makeComparableValue(coord.x)  === makeComparableValue(newCoordinate.x) && 
               makeComparableValue(coord.y) === makeComparableValue(newCoordinate.y);
             });
-            console.log("isOverlappingCoords")
-            console.log(isOverlappingCoords)
           if(!isOverlappingCoords) {
             setCoordinates((prev)=>[...prev, {
               tag: String.fromCharCode(coordinates.length+ 65),
