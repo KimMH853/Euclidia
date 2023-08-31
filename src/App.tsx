@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import distanceBetweenPoints from "./util/getDistanceBetweenCoordinates";
-import equilateralTriangle from "./checkAnswer/equilateralTriangle";
 import makeComparableValue from "./util/makeComparableValue";
 import getNewCoordinatesCircleAndCircle from "./util/getNewCoordinatesCircleAndCircle";
 import getDistanceToLine from "./util/getDistanceToLine";
@@ -11,7 +10,6 @@ import problemsData from "./problems/problemsData";
 import getNewCoordinatesLineAndCircle from "./util/getNewCoordinatesLineAndCircle";
 import getNewCoordinatesLineAndLine from "./util/getNewCoordinatesLineAndLine";
 import checkAnswerData from "./problems/checkAnswerData";
-import equalAngle from "./checkAnswer/equalAngle";
 
 type Shape = {
   type?: string;
@@ -248,44 +246,59 @@ const App = () => {
     const isShapeAlreadyExist = shapes.some(
       (shape) =>
         (shape.type === newShape.type &&
-        shape.startX === newShape.startX &&
-        shape.startY === newShape.startY &&
-        shape.endX === newShape.endX &&
-        shape.endY === newShape.endY)||
+          shape.startX === newShape.startX &&
+          shape.startY === newShape.startY &&
+          shape.endX === newShape.endX &&
+          shape.endY === newShape.endY) ||
         (shape.type === newShape.type &&
           shape.startX === newShape.endX &&
           shape.startY === newShape.endY &&
           shape.endX === newShape.startX &&
           shape.endY === newShape.startY)
     );
-  
+
     if (isShapeAlreadyExist) return;
 
     selectedCoordinates.current = [];
     setShapes((prev) => [...prev, newShape]);
     coordinates.forEach((coordinate) => (coordinate.selected = false));
 
-    const lines = shapes.filter(shape => shape.type === "line")
-   
-    if(lines) {
-      lines.forEach((line)=>{
-        const newCoordinate = getNewCoordinatesLineAndLine(start.x, start.y, end.x, end.y, line.startX, line.startY, line.endX, line.endY)
-        if(newCoordinate) {
-          const isOverlappingCoords = coordinates.some(coord => {
-              return makeComparableValue(coord.x)  === makeComparableValue(newCoordinate.x) && 
-              makeComparableValue(coord.y) === makeComparableValue(newCoordinate.y);
-            });
-          if(!isOverlappingCoords) {
-            setCoordinates((prev)=>[...prev, {
-              tag: String.fromCharCode(coordinates.length+ 65),
-              x: newCoordinate.x,
-              y: newCoordinate.y,
-              selected: false,
-            }])
+    const lines = shapes.filter((shape) => shape.type === "line");
+
+    if (lines) {
+      lines.forEach((line) => {
+        const newCoordinate = getNewCoordinatesLineAndLine(
+          start.x,
+          start.y,
+          end.x,
+          end.y,
+          line.startX,
+          line.startY,
+          line.endX,
+          line.endY
+        );
+        if (newCoordinate) {
+          const isOverlappingCoords = coordinates.some((coord) => {
+            return (
+              makeComparableValue(coord.x) ===
+                makeComparableValue(newCoordinate.x) &&
+              makeComparableValue(coord.y) ===
+                makeComparableValue(newCoordinate.y)
+            );
+          });
+          if (!isOverlappingCoords) {
+            setCoordinates((prev) => [
+              ...prev,
+              {
+                tag: String.fromCharCode(coordinates.length + 65),
+                x: newCoordinate.x,
+                y: newCoordinate.y,
+                selected: false,
+              },
+            ]);
           }
-          
         }
-      })
+      });
     }
   };
 
@@ -336,22 +349,28 @@ const App = () => {
           radius
         );
         if (result) {
-          
-          const nonOverlappingCoords = result.filter(newCoord => {
-            return !coordinates.some(coord => {
-              return makeComparableValue(coord.x)  === makeComparableValue(newCoord.x) && 
-              makeComparableValue(coord.y) === makeComparableValue(newCoord.y);
+          const nonOverlappingCoords = result.filter((newCoord) => {
+            return !coordinates.some((coord) => {
+              return (
+                makeComparableValue(coord.x) ===
+                  makeComparableValue(newCoord.x) &&
+                makeComparableValue(coord.y) === makeComparableValue(newCoord.y)
+              );
             });
           });
 
-          if(nonOverlappingCoords){
-            
-            nonOverlappingCoords.forEach((coord, index)=> setCoordinates((prev)=>[...prev, {
-              tag: String.fromCharCode(coordinates.length + index + 65),
-              x: coord.x,
-              y: coord.y,
-              selected: false,
-            },]))
+          if (nonOverlappingCoords) {
+            nonOverlappingCoords.forEach((coord, index) =>
+              setCoordinates((prev) => [
+                ...prev,
+                {
+                  tag: String.fromCharCode(coordinates.length + index + 65),
+                  x: coord.x,
+                  y: coord.y,
+                  selected: false,
+                },
+              ])
+            );
           }
         }
       });
@@ -381,10 +400,9 @@ const App = () => {
         circle.startY,
         existingCircleRadius
       );
-      if(result) {
+      if (result) {
         newCoordinates.push(...result);
       }
-      
     });
 
     //3. 기존 좌표와 중복체크
@@ -537,7 +555,6 @@ const App = () => {
     }
   };
 
-
   const handleClickAnswerButton = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -545,29 +562,18 @@ const App = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const result = checkAnswerData[problemIndex](coordinates, shapes);
-    console.log(result)
-      //  if (result) {
-      //   const updatedShapes = shapes.map((shape) =>
-      //   result.includes(shape) ? { ...shape, selected: true } : shape
-      //   );
-      //   setShapes(updatedShapes);
-      //   setIsWrongAnswer(false);
-      // } else {
-      //   setIsWrongAnswer(true);
-      // }
-      if (result) {
-        result.forEach((item)=>{
-          ctx.beginPath();
-          ctx.moveTo(item.startX, item.startY);
-          ctx.lineTo(item.endX, item.endY);
-          ctx.strokeStyle = "red";
-          ctx.stroke();
-        })
-        
-      } else {
-        setIsWrongAnswer(true);
-      }
-  }
+    if (result) {
+      result.forEach((item) => {
+        ctx.beginPath();
+        ctx.moveTo(item.startX, item.startY);
+        ctx.lineTo(item.endX, item.endY);
+        ctx.strokeStyle = "red";
+        ctx.stroke();
+      });
+    } else {
+      setIsWrongAnswer(true);
+    }
+  };
 
   const handleClickBeforeProblem = () => {
     setProblemIndex((prev) => {
@@ -652,12 +658,10 @@ const App = () => {
     const deltaX = event.clientX - lastMousePosition.current.x;
     const deltaY = event.clientY - lastMousePosition.current.y;
 
-    // Calculate the distance between the two points
     const distance = Math.sqrt(
       (mouseX - canvasX) ** 2 + (mouseY - canvasY) ** 2
     );
 
-    // Only draw the line if the distance is 10 or more
     if (distance >= 10) {
       // 클릭한 지점이 좌표 안에 있는지 확인
       const clickedCoordinate = coordinates.find(
@@ -799,7 +803,6 @@ const App = () => {
       if (circles.length === 0) return;
 
       //2. 새로운 원과 기존의 원들의 겹치는 부분의 좌표를 얻는다
-      const newCoordinates: { x: number; y: number }[] = [];
       let i = 0;
       circles.forEach((circle) => {
         const existingCircleRadius = distanceBetweenPoints(
@@ -820,21 +823,30 @@ const App = () => {
         );
 
         if (result) {
-          const nonOverlappingCoords = result.filter(newCoord => {
-            // Check if the newPoint overlaps with any coordinate in the coordinates array
-            return !coordinates.some(coord => {
-              return makeComparableValue(coord.x)  === makeComparableValue(newCoord.x) && 
-              makeComparableValue(coord.y) === makeComparableValue(newCoord.y);
+          const nonOverlappingCoords = result.filter((newCoord) => {
+            return !coordinates.some((coord) => {
+              return (
+                makeComparableValue(coord.x) ===
+                  makeComparableValue(newCoord.x) &&
+                makeComparableValue(coord.y) === makeComparableValue(newCoord.y)
+              );
             });
           });
 
-          if(nonOverlappingCoords){
-            nonOverlappingCoords.forEach((coord, index)=> setCoordinates((prev)=>[...prev, {
-              tag: String.fromCharCode(coordinates.length + index + i++ + 65),
-              x: coord.x,
-              y: coord.y,
-              selected: false,
-            },]))
+          if (nonOverlappingCoords) {
+            nonOverlappingCoords.forEach((coord, index) =>
+              setCoordinates((prev) => [
+                ...prev,
+                {
+                  tag: String.fromCharCode(
+                    coordinates.length + index + i++ + 65
+                  ),
+                  x: coord.x,
+                  y: coord.y,
+                  selected: false,
+                },
+              ])
+            );
           }
         }
       });
@@ -932,9 +944,7 @@ const App = () => {
           다음
         </button>
 
-        {isWrongAnswer && <div>정삼각형이 없어요</div>}
-        {/* <div> shapes {JSON.stringify(shapes)}</div> */}
-        {/* <div> coordinates {JSON.stringify(coordinates)}</div> */}
+        {isWrongAnswer && <div>다시 해봅시다</div>}
       </div>
     </div>
   );

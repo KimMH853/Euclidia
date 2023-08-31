@@ -1,5 +1,5 @@
 import bisectLine from "../checkAnswer/bisectLine";
-import checkVerticalLine from "../checkAnswer/checkverticalLine";
+import checkVerticalLine from "../checkAnswer/checkVerticalLine";
 import equalAngle from "../checkAnswer/equalAngle";
 import equalLengthLine from "../checkAnswer/equalLengthLine";
 import equilateralTriangle from "../checkAnswer/equilateralTriangle";
@@ -20,16 +20,17 @@ type Shape = {
   selected?: boolean;
 };
 
-type ProblemCheckFunction = (coordinates: Coordinate[], shapes: Shape[]) => false | Shape[];
+type ProblemCheckFunction = (
+  coordinates: Coordinate[],
+  shapes: Shape[]
+) => false | Shape[];
 
-const checkAnswerData: { [key: number]:ProblemCheckFunction } = {
+const checkAnswerData: { [key: number]: ProblemCheckFunction } = {
   0: equilateralTriangle,
   1: equalLengthLine,
   2: equalAngle,
   3: bisectLine,
-  4: checkVerticalLine
-  
-
+  4: checkVerticalLine,
 };
 
 export default checkAnswerData;

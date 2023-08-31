@@ -1,5 +1,11 @@
-const getDistanceToLine = (x: number, y: number, x1: number, y1: number, x2: number, y2: number) => {
-  //console.log("getDistanceToLine")
+const getDistanceToLine = (
+  x: number,
+  y: number,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number
+) => {
   const A = x - x1;
   const B = y - y1;
   const C = x2 - x1;
@@ -26,6 +32,5 @@ const getDistanceToLine = (x: number, y: number, x1: number, y1: number, x2: num
   const dy = y - yy;
   return Math.sqrt(dx * dx + dy * dy);
 };
-
 
 export default getDistanceToLine;
