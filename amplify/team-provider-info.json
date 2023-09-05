@@ -1,0 +1,23 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-euclid-dev-190909-authRole",
+      "UnauthRoleArn": "arn:aws:iam::958085246519:role/amplify-euclid-dev-190909-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::958085246519:role/amplify-euclid-dev-190909-authRole",
+      "Region": "ap-northeast-2",
+      "DeploymentBucketName": "amplify-euclid-dev-190909-deployment",
+      "UnauthRoleName": "amplify-euclid-dev-190909-unauthRole",
+      "StackName": "amplify-euclid-dev-190909",
+      "StackId": "arn:aws:cloudformation:ap-northeast-2:958085246519:stack/amplify-euclid-dev-190909/6d161d00-47e6-11ee-87c9-02797cb4f448",
+      "AmplifyAppId": "d1poysg5gc7gbm"
+    },
+    "categories": {
+      "hosting": {
+        "amplifyhosting": {
+          "appId": "d1poysg5gc7gbm",
+          "type": "manual"
+        }
+      }
+    }
+  }
+}
