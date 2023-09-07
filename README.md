@@ -3,7 +3,7 @@
 - 직선과 원으로 문제를 풀면 자연스럽게 기하학을 이해 할 수 있어요
 
 서비스 링크 : [euclidia.site](https://euclidia.site/)
-
+<hr/>
 ## 📚STACKS
 
 <p>
@@ -14,14 +14,15 @@
   <img src="https://img.shields.io/badge/awsamplify-FF9900?style=for-the-badge&logo=awsamplify&logoColor=white"> &nbsp
   <img src="https://img.shields.io/badge/cloudflare-F38020?style=for-the-badge&logo=cloudflare&logoColor=white">
 </p>
-
-## 👨‍🏫사용 방법
+<hr/>
+## 👨‍🏫이용 방법
 - 원하는 버튼을 선택 후 점을 클릭하여 직선과 원을 그린다
 - 점 버튼을 클릭 후 직선 위 원하는 위치를 클릭하면 새로운 점이 생긴다
 - 지우기 버튼 클릭 후 화면을 클릭하면 선택 된 직선이나 원이 삭제 된다
 - 확인 버튼으로 정답 체크
 - 이전, 다음 버튼으로 문제 간 이동
-
+<hr/>
+## 서비스 화면
 <table>
   <tr>
     <td align="center">처음 화면</td>
