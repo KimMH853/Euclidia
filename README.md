@@ -4,7 +4,7 @@
 
 서비스 링크 : [euclidia.site](https://euclidia.site/)
 
-<hr/>
+<br/>
 
 ## 📚STACKS
 
@@ -17,7 +17,7 @@
   <img src="https://img.shields.io/badge/cloudflare-F38020?style=for-the-badge&logo=cloudflare&logoColor=white">
 </p>
 
-<hr/>
+<br/>
 
 ## 👨‍🏫이용 방법
 - 원하는 버튼을 선택 후 점을 클릭하여 직선과 원을 그린다
@@ -26,7 +26,7 @@
 - 확인 버튼으로 정답 체크
 - 이전, 다음 버튼으로 문제 간 이동
   
-<hr/>
+<br/>
 
 ## 서비스 화면
 
