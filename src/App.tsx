@@ -10,6 +10,7 @@ import problemsData from "./problems/problemsData";
 import getNewCoordinatesLineAndCircle from "./util/getNewCoordinatesLineAndCircle";
 import getNewCoordinatesLineAndLine from "./util/getNewCoordinatesLineAndLine";
 import checkAnswerData from "./problems/checkAnswerData";
+import "./App.css";
 
 type Shape = {
   type?: string;
@@ -857,16 +858,19 @@ const App = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <div className="mb-4">{problemText}</div>
+    
+      
+      <div className="flex flex-col items-center justify-center h-screen">
+      <h1 className="title flex justify-center mb-6 text-4xl font-medium text-[#004D40]">Euclidia</h1>
+      <div className="problem mb-2">{problemText}</div>
 
       <div className="m-2">
         <button
           className={`mr-2 px-4 py-2 ${
             currentSelectedTool === "line"
-              ? "bg-blue-500 text-white"
-              : "bg-white text-blue-500 border-blue-500 border"
-          } rounded cursor-pointer`}
+              ? "bg-[#00796B] text-white"
+              : "bg-white text-[#00796B] border-[#00796B] border"
+          } rounded-none cursor-pointer`}
           name="line"
           onClick={handleClickLineButton}
         >
@@ -876,9 +880,9 @@ const App = () => {
         <button
           className={`mr-2 px-4 py-2 ${
             currentSelectedTool === "circle"
-              ? "bg-blue-500 text-white"
-              : "bg-white text-blue-500 border-blue-500 border"
-          } rounded cursor-pointer`}
+              ? "bg-[#00796B] text-white"
+              : "bg-white text-[#00796B] border-[#00796B] border"
+          } rounded-none cursor-pointer`}
           name="circle"
           onClick={handleClickCircleButton}
         >
@@ -887,9 +891,9 @@ const App = () => {
         <button
           className={`mr-2 px-4 py-2 ${
             currentSelectedTool === "coordinate"
-              ? "bg-blue-500 text-white"
-              : "bg-white text-blue-500 border-blue-500 border"
-          } rounded cursor-pointer`}
+              ? "bg-[#00796B] text-white"
+              : "bg-white text-[#00796B] border-[#00796B] border"
+          } rounded-none cursor-pointer`}
           name="coordinate"
           onClick={handleClickCoordButton}
         >
@@ -898,13 +902,13 @@ const App = () => {
         <button
           className={`mr-2 px-4 py-2 ${
             currentSelectedTool === "erase"
-              ? "bg-blue-500 text-white"
-              : "bg-white text-blue-500 border-blue-500 border"
-          } rounded cursor-pointer`}
+              ? "bg-[#00796B] text-white"
+              : "bg-white text-[#00796B] border-[#00796B] border"
+          } rounded-none cursor-pointer`}
           name="erase"
           onClick={handleClickEraseButton}
         >
-          삭제
+          지우기
         </button>
       </div>
 
@@ -912,7 +916,7 @@ const App = () => {
         ref={canvasRef}
         width={400}
         height={400}
-        className="border border-black"
+        className="border border-[#CFCFCF]"
         onClick={handleCanvasClick}
         onWheel={handleCanvasWheel}
         onMouseDown={handleCanvasDragStart} // 드래그 시작
@@ -923,21 +927,21 @@ const App = () => {
 
       <div className="m-2">
         <button
-          className="mr-2 px-4 py-2 bg-blue-500 text-white rounded cursor-pointer"
+          className="mr-2 px-4 py-2 bg-[#00796B] text-white rounded-none cursor-pointer"
           name="circle"
           onClick={handleClickAnswerButton}
         >
           확인
         </button>
         <button
-          className="mr-2 px-4 py-2 bg-blue-500 text-white rounded cursor-pointer"
+          className="mr-2 px-4 py-2 bg-[#00796B] text-white rounded-none cursor-pointer"
           name="circle"
           onClick={handleClickBeforeProblem}
         >
           이전
         </button>
         <button
-          className="mr-2 px-4 py-2 bg-blue-500 text-white rounded cursor-pointer"
+          className="mr-2 px-4 py-2 bg-[#00796B] text-white rounded-none cursor-pointer"
           name="circle"
           onClick={handleClickNextProblem}
         >
@@ -947,6 +951,8 @@ const App = () => {
         {isWrongAnswer && <div>다시 해봅시다</div>}
       </div>
     </div>
+    
+    
   );
 };
 
