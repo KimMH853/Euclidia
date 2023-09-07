@@ -21,9 +21,20 @@
 - 지우기 버튼 클릭 후 화면을 클릭하면 선택 된 직선이나 원이 삭제 된다
 - 확인 버튼으로 정답 체크
 - 이전, 다음 버튼으로 문제 간 이동
+
+<table>
+  <tr>
+    <td align="center">처음 화면</td>
+    <td align="center">정답이면 붉은 색으로 표시</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://github.com/KimMH853/Euclidia/assets/100124429/5894e761-ba7e-4b69-8c64-fbad1c1a9ae9" alt="처음화면"></td>
+    <td align="center"><img src="https://github.com/KimMH853/Euclidia/assets/100124429/bd401ee8-ebf5-49d7-a6e2-1799a9c31408" alt="정답확인화면"></td>
+  </tr>
+  
+</table>
    
 ![처음화면](https://github.com/KimMH853/Euclidia/assets/100124429/5894e761-ba7e-4b69-8c64-fbad1c1a9ae9)
 
-처음 화면
 ![정답확인화면](https://github.com/KimMH853/Euclidia/assets/100124429/bd401ee8-ebf5-49d7-a6e2-1799a9c31408)
-정답이면 붉은 색으로 표시
+
