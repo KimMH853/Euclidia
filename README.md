@@ -2,6 +2,8 @@
 - 유클리드 기하학을 퍼즐 게임 처럼 즐기자
 - 직선과 원으로 문제를 풀면 자연스럽게 기하학을 이해 할 수 있어요
 
+서비스 링크 : [euclidia.site](https://euclidia.site/)
+
 ## stacks
 <p align="center">
 <img src="https://img.shields.io/badge/javascript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=white"> &nbsp
